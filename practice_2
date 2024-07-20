@@ -1,0 +1,36 @@
+-- 2 MySQL aggregate functions
+-- Task 2.1
+-- Get the minimum and maximum date of employment
+SELECT 
+	MIN(hire_date) AS min_hire_date, 
+    MAX(hire_date) AS max_hire_date
+FROM employees.employees;
+
+-- Task 2.2
+-- Get the average salary for all salary contracts
+SELECT AVG(salary) AS avg_salary
+FROM employees.salaries;
+
+-- 1:10:11
+-- https://i.dan-it.com.ua/programs/1/module/16/lesson/87/records/4433
+
+-- Task 2.3
+-- Get all employees with an average salary of more than $120,000.
+SELECT emp_no, AVG(salary) AS avg_salary FROM employees.salaries
+GROUP BY emp_no;
+
+-- Task 2.4
+-- Get departments with more than 3 managers historically
+
+-- Task 2.5
+-- Get the number of employees who signed more than 1 employment contract after 1 January 2000
+
+-- Task 2.6
+-- What is the smallest, largest employee number in the database?
+
+-- Task 2.7
+-- Get the average salary of employees who started working after 1 January 1997
+
+-- Task 2.8
+-- Round up the average amount of money spent on salaries for all contracts that started after 1 January 1997 to the nearest to the nearest cent.
+
