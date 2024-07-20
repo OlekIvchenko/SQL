@@ -11,26 +11,76 @@ FROM employees.employees;
 SELECT AVG(salary) AS avg_salary
 FROM employees.salaries;
 
--- 1:10:11
--- https://i.dan-it.com.ua/programs/1/module/16/lesson/87/records/4433
-
 -- Task 2.3
--- Get all employees with an average salary of more than $120,000.
-SELECT emp_no, AVG(salary) AS avg_salary FROM employees.salaries
-GROUP BY emp_no;
+-- Show Lowest/Highest day per birth (among M,F)
+SELECT 
+	gender,
+	MIN(birth_date) AS min_birth_date, 
+    MAX(birth_date) AS max_birth_date
+FROM employees.employees
+GROUP BY gender;
 
 -- Task 2.4
--- Get departments with more than 3 managers historically
+-- Show the total number of employees with the first name ‘Georgi’ and last name ‘Facello’
+SELECT first_name, last_name, COUNT(emp_no)
+FROM employees.employees
+WHERE first_name = 'Georgi' AND last_name = 'Facello'
+GROUP BY first_name, last_name;
 
 -- Task 2.5
--- Get the number of employees who signed more than 1 employment contract after 1 January 2000
+-- Get all employees with an average salary of more than $120,000.
+SELECT emp_no, AVG(salary) AS avg_salary
+FROM employees.salaries
+GROUP BY emp_no
+-- HAVING avg_salary > 120000;
+HAVING AVG(salary) > 120000;
 
 -- Task 2.6
--- What is the smallest, largest employee number in the database?
+-- Get departments with more than 3 managers historically
+SELECT dept_no
+FROM employees.dept_manager
+GROUP BY dept_no
+HAVING COUNT(DISTINCT emp_no) > 3;
 
 -- Task 2.7
--- Get the average salary of employees who started working after 1 January 1997
+-- Get the number of employees who signed more than 1 employment contract after 1 January 2000
+SELECT emp_no, COUNT(from_date) AS count_from_date
+FROM employees.dept_emp
+WHERE from_date > "2000-01-01"
+GROUP BY emp_no
+HAVING COUNT(from_date) > 1;
 
 -- Task 2.8
--- Round up the average amount of money spent on salaries for all contracts that started after 1 January 1997 to the nearest to the nearest cent.
+-- What is the smallest, largest employee number in the database?
+SELECT 
+    MIN(emp_no) AS min_emp_no
+    , MAX(emp_no) AS max_emp_no
+FROM employees.employees;
 
+-- Task 2.9
+-- Get the average salary of employees who started working after 1 January 1997
+SELECT 
+	emp_no
+    ,AVG(salary) AS avg_salary
+FROM employees.salaries
+WHERE from_date > "1997-01-01"
+GROUP BY emp_no;
+
+SELECT 
+	emp_no
+    ,AVG(salary) AS avg_salary
+FROM employees.salaries
+GROUP BY emp_no
+HAVING MIN(from_date) > '1997-01-01';
+
+-- Task 2.10
+-- Show the average amount of money spent on salaries for all contracts that started after 1 January 1997 to the nearest to the nearest cent.
+SELECT emp_no, ROUND(AVG(salary), 2) AS avg_salary
+FROM employees.salaries
+WHERE from_date > "1997-01-01"
+GROUP BY emp_no;
+
+SELECT emp_no, ROUND(AVG(salary), 2) AS avg_salary
+FROM employees.salaries
+GROUP BY emp_no
+HAVING MIN(from_date) > "1997-01-01";
