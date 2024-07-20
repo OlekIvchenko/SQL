@@ -96,3 +96,49 @@ WHERE gender = 'F' AND hire_date >= '2000-01-01';
 -- Get out a list with the salaries of all employees above $150,000 per annum.
 SELECT * FROM employees.salaries
 WHERE salary > 150000;
+
+
+-- OTHER
+
+# ORDER BY - сортування результатів, приймає два параметри ASC, DESC - по замовч ASC
+SELECT emp_no, first_name, last_name
+FROM employees 
+ORDER BY first_name; -- Asc
+
+
+SELECT emp_no, first_name, last_name
+FROM employees 
+ORDER BY first_name DESC ; 
+
+
+SELECT emp_no, first_name, last_name
+FROM employees 
+ORDER BY first_name ASC ,  emp_no DESC; 
+
+
+# Limit - вказує кількість  рядків які потрібно повернути, приймає два параметри N - pass, M - return
+SELECT emp_no, first_name, last_name
+FROM employees 
+ORDER BY emp_no ASC
+LIMIT 10 ; 
+
+
+SELECT emp_no, first_name, last_name
+FROM employees 
+ORDER BY emp_no ASC
+LIMIT 5, 10 ;
+
+
+SELECT *
+FROM salaries
+ORDER BY salary DESC
+LIMIT 1;
+
+
+#   Знайти 2 найбільшу зп
+SELECT *
+FROM salaries 
+ORDER BY salary DESC
+LIMIT 1, 1;
+
+DESC salaries;
