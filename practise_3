@@ -1,1 +1,88 @@
+-- Task 3.1
+-- Show employees who were 30+ years old at the time of hiring.
+SELECT *, TIMESTAMPDIFF(YEAR, birth_date, hire_date) AS years
+FROM employees.employees
+WHERE TIMESTAMPDIFF(YEAR, birth_date, hire_date) > 30
+ORDER BY years ASC;
 
+SELECT *, TIMESTAMPDIFF(DAY, birth_date, NOW()), MONTH(birth_date) AS mon
+FROM employees.employees
+WHERE MONTH(birth_date) IN (1 , 2)
+ORDER BY mon;
+
+-- Task 3.2
+-- Show the average age of employees by gender at the time of hiring
+SELECT gender, ROUND(AVG(TIMESTAMPDIFF(YEAR, birth_date, hire_date)), 0) AS avg_age
+FROM employees.employees
+GROUP BY gender;
+
+-- Task 3.3: 
+-- Change the zone from our time and display it, for 3 time zones
+SELECT 
+	NOW() AS 'My Time',
+    CONVERT_TZ(NOW(), '+01:00' ,'-04:00') AS 'New York Time',
+    CONVERT_TZ(NOW(), '+01:00' ,'+00:00') AS 'London Time',
+    CONVERT_TZ(NOW(), '+01:00' ,'+08:00') AS 'Tokyo Time';
+
+-- Task 3.4
+-- Show the value of the current date -1 year
+SELECT 
+    CURDATE() AS 'Current Date', 
+    DATE_SUB(curdate(), INTERVAL 1 YEAR) AS 'Date -1_year';
+SELECT YEAR(curdate()) -1;
+SELECT DATE_SUB(curdate(), INTERVAL 1 YEAR);
+SELECT DATE_ADD(NOW(), INTERVAL -1 YEAR) AS 'YEAR - 1';
+
+-- Task 3.5
+-- Get all (sequence number) employees and their salaries who are currently working
+SELECT emp_no, salary
+FROM employees.salaries
+WHERE curdate() BETWEEN from_date AND to_date;
+
+SELECT emp_no, salary
+FROM  employees.salaries
+WHERE to_date >= curdate();
+
+-- Task 3.6
+-- Who is working on the current date: 01-01-1990
+SELECT *
+FROM employees.salaries
+WHERE '1990-01-01' BETWEEN from_date AND to_date;
+
+SELECT *
+FROM employees.salaries
+WHERE from_date <= '1990-01-01' AND to_date >='1990-01-01'
+ORDER BY emp_no;
+
+-- Task 3.7
+-- Show the format relative to the current date. Sequential number of the day of the month, the textual name of the month, and a two-digit year
+SELECT DATE_FORMAT(NOW(), '%D %M %Y') AS 'Current Date';
+
+-- Task 3.8
+-- How many employees were hired each year?
+SELECT
+	EXTRACT(YEAR FROM hire_date) AS hire_year,
+    COUNT(*) AS total_emp_no
+FROM employees.employees
+GROUP BY EXTRACT(YEAR FROM hire_date)
+ORDER BY EXTRACT(YEAR FROM hire_date) ASC;
+
+-- Task 3.9
+-- In which years were less than 23,000 employees hired?
+SELECT
+	EXTRACT(YEAR FROM hire_date) AS hire_year,
+    COUNT(*) AS total_emp_no
+FROM employees.employees
+GROUP BY EXTRACT(YEAR FROM hire_date)
+HAVING COUNT(*) < 23000
+ORDER BY EXTRACT(YEAR FROM hire_date) ASC;
+
+-- Task 3.10
+-- Show how many employees were hired in 1989 by month. Sort the months by the number of employees hired in descending order?
+SELECT
+	EXTRACT(MONTH FROM hire_date) AS month_1989,
+	COUNT(*) AS total_emp_no
+FROM employees.employees
+WHERE hire_date BETWEEN '1989-01-01' AND '1989-12-31'
+GROUP BY EXTRACT(MONTH FROM hire_date)
+ORDER BY COUNT(*) DESC;
