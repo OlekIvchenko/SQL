@@ -84,3 +84,63 @@ SELECT emp_no, ROUND(AVG(salary), 2) AS avg_salary
 FROM employees.salaries
 GROUP BY emp_no
 HAVING MIN(from_date) > "1997-01-01";
+
+-- Task 2.11
+-- List all female employees who joined on January 1, 1990, or after January 1, 2000
+SELECT *
+FROM employees.employees
+WHERE gender = 'F' AND (hire_date = '1990-01-01' OR hire_date > '2000-01-01')
+ORDER BY hire_date DESC;
+
+-- Task 2.12
+-- Show the names of all employees who have the same first and last name
+SELECT first_name, last_name, COUNT(*) AS count
+FROM employees.employees
+GROUP BY first_name, last_name
+HAVING COUNT(*) > 1;
+
+-- Task 2.13
+-- Show the employee numbers 10001, 10002, 10003, and 10004. Select the columns: first_name, last_name, gender, hire_date.
+SELECT emp_no, first_name, last_name, gender, hire_date
+FROM employees.employees
+WHERE emp_no BETWEEN '10000' AND '10005';
+
+-- Task 2.14
+-- Select the names of all departments whose names contain the letter 'a' at any position or have the letter 'e' as the second character.
+SELECT dept_name
+FROM employees.departments
+WHERE dept_name LIKE('%a%') OR dept_name LIKE('_e%');
+
+-- Task 2.15
+-- Show the employees who match the following description: He was 45 years old when he was hired, he was born in October, and he was hired on a Sunday.
+SELECT 
+	emp_no, 
+    first_name, 
+    last_name, 
+    TIMESTAMPDIFF(YEAR, birth_date, hire_date) AS years, 
+    MONTH(birth_date) AS born_in, 
+    DAYOFWEEK(hire_date) AS day_of_week
+FROM employees.employees
+WHERE TIMESTAMPDIFF(YEAR, birth_date, hire_date) = 45
+  AND MONTH(birth_date) = 10
+  AND DAYOFWEEK(hire_date) = 1;
+  
+-- Task 2.16
+-- Show the maximum annual salary in the company after June 1, 1995.
+SELECT MAX(salary) AS max_salary
+FROM employees.salaries
+WHERE from_date > '1995-06-01';
+
+-- Task 2.17
+-- In the dept_emp table, show the number of employees by department (dept_no) where to_date is greater than the current date. Display departments with more than 13,000 employees. Sort by the number of employees.
+SELECT dept_no, COUNT(*) AS employee_count
+FROM employees.dept_emp
+WHERE to_date > CURRENT_DATE
+GROUP BY dept_no
+HAVING employee_count > 13000
+ORDER BY employee_count DESC;
+
+-- Task 2.18
+-- Show the minimum and maximum salaries for employees.
+SELECT MAX(salary) AS max_salary, MIN(salary) AS min_salary
+FROM employees.salaries;
