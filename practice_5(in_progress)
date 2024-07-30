@@ -36,3 +36,70 @@ left join
 group by 
     s.student_id, s.student_name, su.subject_name
 order by student_id, subject_name;
+
+
+
+-- Task 5.1
+-- https://leetcode.com/problems/students-and-examinations/description/?envType=study-plan-v2&envId=top-sql-50
+
+-- option 1
+select 
+    s.student_id
+    , s.student_name
+    , su.subject_name
+    , sum(case when e.student_id is null then 0 else 1 end) as attended_exams
+from 
+    Students as s
+cross join 
+    Subjects as su 
+left join 
+    Examinations as e 
+    on s.student_id = e.student_id and su.subject_name = e.subject_name
+group by 
+    s.student_id, s.student_name, su.subject_name
+order by student_id, subject_name;
+
+
+-- option 2
+select 
+    s.student_id
+    , s.student_name
+    , su.subject_name
+    , count(e.student_id) as attended_exams
+from 
+    Students as s
+cross join 
+    Subjects as su 
+left join 
+    Examinations as e 
+    on s.student_id = e.student_id and su.subject_name = e.subject_name
+group by 
+    s.student_id, s.student_name, su.subject_name
+order by student_id, subject_name;
+
+
+# USING - one column, one name for both table
+# ON - many column, diff name fot both table
+
+# 1 - simple join (one table)
+SELECT emp_no
+FROM employees AS ee
+INNER JOIN dept_emp AS ede USING(emp_no); -- Join database_name.table_name
+
+# 2 - multiple join ( two table and more)
+SELECT # 6
+	ee.gender
+FROM 
+	employees AS ee # 1
+INNER JOIN 
+	dept_emp AS ede USING(emp_no) # 2
+INNER JOIN 
+	salaries AS es USING(emp_no) # 3
+WHERE # 4
+	ee.hire_date  BETWEEN '1986-01-01' AND '1986-12-31'
+GROUP BY # 5
+	ee.gender
+HAVING # 7
+	es.salary > 90000
+ORDER BY ee.gender # 8
+;
