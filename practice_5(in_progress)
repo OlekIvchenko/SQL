@@ -1,1 +1,38 @@
 
+-- Task 5.1
+-- https://leetcode.com/problems/students-and-examinations/description/?envType=study-plan-v2&envId=top-sql-50
+
+-- option 1
+select 
+    s.student_id
+    , s.student_name
+    , su.subject_name
+    , sum(case when e.student_id is null then 0 else 1 end) as attended_exams
+from 
+    Students as s
+cross join 
+    Subjects as su 
+left join 
+    Examinations as e 
+    on s.student_id = e.student_id and su.subject_name = e.subject_name
+group by 
+    s.student_id, s.student_name, su.subject_name
+order by student_id, subject_name;
+
+
+-- option 2
+select 
+    s.student_id
+    , s.student_name
+    , su.subject_name
+    , count(e.student_id) as attended_exams
+from 
+    Students as s
+cross join 
+    Subjects as su 
+left join 
+    Examinations as e 
+    on s.student_id = e.student_id and su.subject_name = e.subject_name
+group by 
+    s.student_id, s.student_name, su.subject_name
+order by student_id, subject_name;
