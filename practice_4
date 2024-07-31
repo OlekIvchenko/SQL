@@ -124,11 +124,39 @@ SELECT
 	ee.first_name AS "First Name"
     , ee.last_name AS "Last Name"
     , ee.hire_date AS "Hire Date"
-    ,et.title AS "Title"
+    , et.title AS "Title"
 FROM employees.employees AS ee
 INNER JOIN employees.titles AS et 
 	ON(ee.emp_no = et.emp_no)
 WHERE ee.first_name="Margareta" AND ee.last_name="Markovitch";
+
+-- Task 7
+-- По кожному відділу покажіть кількість найнятих чоловіків та жінок.
+SELECT 
+	ede.dept_no
+	, SUM(CASE WHEN ee.gender = 'M' THEN 1 ELSE 0 END) AS "Male Count"
+    , SUM(CASE WHEN ee.gender = 'F' THEN 1 ELSE 0 END) AS "Female Count"
+FROM employees.employees AS ee
+INNER JOIN employees.dept_emp AS ede
+	ON(ee.emp_no = ede.emp_no)
+GROUP BY ede.dept_no;
+
+-- Task 8
+-- Покажіть всі поля з таблиць employees, salaries де поле salaries.to_date більше поточної дати. При виконанні завдання не користуйтеся конструкцію WHERE
+SELECT ee.*, es.*
+FROM employees.employees AS ee
+JOIN employees.salaries AS es 
+	ON ee.emp_no = es.emp_no AND es.to_date > CURDATE();
+
+-- Task 9
+-- Покажіть середню актуальну зарплату (salaries.to_date більше сьогоднішній даті) для чоловіків і жінок.
+SELECT 
+	ee.gender, 
+	ROUND(AVG(es.salary), 2) AS "Average Salary"
+FROM employees.employees AS ee
+JOIN employees.salaries AS es 
+	ON ee.emp_no = es.emp_no AND es.to_date > CURDATE()
+GROUP BY ee.gender;
 
 -- Function 1
 -- SHOW DATABASES;
