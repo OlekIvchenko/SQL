@@ -1,1 +1,146 @@
+-- Task 1
+-- Перетворити  наступне значення 'Dec 01 22'  в дату
+SELECT STR_TO_DATE('Dec 01, 22','%M %d,%Y');
 
+-- Example 1
+SELECT 
+	ee.emp_no
+    , ee.birth_date
+    , ee.first_name
+    , ee.last_name
+    , ede.dept_no
+FROM # 1
+ employees.employees AS ee
+INNER JOIN # 2
+ employees.dept_emp AS ede 
+    ON (ee.emp_no = ede.emp_no ) ; # <-- безлічь умов
+
+-- Example 2
+SELECT ee.*, ede.dept_no
+FROM employees AS ee
+JOIN employees.dept_emp AS ede 
+	ON ee.emp_no = ede.emp_no ; # <-- безлічь умов
+
+-- Example 3
+SELECT *
+FROM employees.employees AS ee
+INNER JOIN employees.dept_emp AS ede 
+	USING(emp_no); # <-- однакова назва та тільки по одній колонці
+
+-- Example 4 
+SELECT 
+	ee.emp_no, 
+    CONCAT(ee.first_name,' ' , ee.last_name) AS 'Full name', 
+    es.salary # 4
+FROM employees.employees AS ee # 1
+INNER JOIN employees.salaries AS es USING(emp_no) # 2
+WHERE es.salary BETWEEN 70000 AND 100000  # 3
+ORDER BY ee.emp_no ASC ;# 5;
+
+-- Task 2
+-- Витягніть список, що містить інформацію про номери усіх керівників, ім’я та прізвище, номер відділу та дату найму.
+SELECT 
+	ee.emp_no as "Manager's Number"
+    , ee.first_name as "First Name"
+    , ee.last_name as "Last Name"
+    , edm.dept_no as "Department Number"
+    , ee.hire_date as "Hire Date"
+FROM employees.employees AS ee
+INNER JOIN employees.dept_manager AS edm 
+    ON (ee.emp_no = edm.emp_no);
+
+-- Templete Left Join
+/*
+  Left Join 
+ id   id_sec    result_table
+    1    3     1 - NULL
+    2    4     2 - NULL
+    3    5     3 - 3
+    4    6     4 - 4
+*/
+
+-- Example 5
+SELECT ee.emp_no, es.emp_no, es.salary
+FROM employees AS ee
+LEFT JOIN  salaries as es USING(emp_no)
+WHERE es.emp_no IS NULL
+ORDER BY ee.emp_no;
+
+-- Task 3
+-- До таблиці «employees» додайте данні з таблиці «dept_manager». Покажіть всі поля двох таблиць де employees.last_name = 'Markovitch'
+SELECT *
+FROM employees.employees AS ee
+LEFT JOIN dept_manager AS edm USING(emp_no)
+WHERE ee.last_name = 'Markovitch' AND edm.emp_no IS NOT NULL;
+
+-- Task 4
+-- https://leetcode.com/problems/employee-bonus/?envType=study-plan-v2&envId=top-sql-50
+
+-- Task 5
+-- https://leetcode.com/problems/customer-who-visited-but-did-not-make-any-transactions/description/?envType=study-plan-v2&envId=top-sql-50
+
+-- Templete Right Join
+/*
+    Right Join
+     id   id_sec    result_table
+    1    3     null - 5
+    2    4      null - 6 
+    3    5     3 - 3
+    4    6     4 - 4
+  */
+
+-- Example 6
+SELECT ee.*, es.*
+FROM employees.employees AS ee
+RIGHT JOIN employees.salaries AS es 
+	ON(ee.emp_no = es.emp_no)
+WHERE ee.emp_no IS NOT NULL;
+
+-- Example 7
+SELECT 
+	ee.emp_no, 
+    ee.first_name, 
+    ee.last_name, 
+    edm.dept_no, 
+    ee.hire_date
+FROM 
+ employees.employees AS ee, 
+ employees.dept_manager AS edm
+WHERE ee.emp_no =  edm.emp_no
+ORDER BY ee.emp_no;
+
+-- Example 8
+SELECT 
+	ee.emp_no, 
+    ee.first_name, 
+    ee.last_name, 
+    es.salary
+FROM employees.employees AS ee
+NATURAL JOIN employees.salaries AS  es;
+
+-- Task 6
+-- Виберіть ім’я та прізвище, дату найму та посаду всіх працівників, ім’я яких «Margareta» та прізвище «Markovitch».
+
+
+-- Task 7
+-- По кожному відділу покажіть кількість найнятих чоловіків та жінок.
+
+
+-- Task 8
+-- Покажіть всі поля з таблиць employees, salaries де поле salaries.to_date більше поточної дати. При виконанні завдання не користуйтеся конструкцію WHERE
+
+
+-- Task 9
+-- Покажіть середню актуальну зарплату (salaries.to_date більше сьогоднішній даті) для чоловіків і жінок.
+
+-- Function 1
+-- SHOW DATABASES;
+
+-- Function 2
+-- USE employees; # use <database name>
+
+-- Function 3
+-- SHOW TABLES;
+
+-- Function 4
+-- DESC employees;
