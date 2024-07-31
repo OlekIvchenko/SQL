@@ -104,8 +104,8 @@ SELECT
     edm.dept_no, 
     ee.hire_date
 FROM 
- employees.employees AS ee, 
- employees.dept_manager AS edm
+	employees.employees AS ee, 
+	employees.dept_manager AS edm
 WHERE ee.emp_no =  edm.emp_no
 ORDER BY ee.emp_no;
 
@@ -116,22 +116,19 @@ SELECT
     ee.last_name, 
     es.salary
 FROM employees.employees AS ee
-NATURAL JOIN employees.salaries AS  es;
+NATURAL JOIN employees.salaries AS es;
 
 -- Task 6
 -- Виберіть ім’я та прізвище, дату найму та посаду всіх працівників, ім’я яких «Margareta» та прізвище «Markovitch».
-
-
--- Task 7
--- По кожному відділу покажіть кількість найнятих чоловіків та жінок.
-
-
--- Task 8
--- Покажіть всі поля з таблиць employees, salaries де поле salaries.to_date більше поточної дати. При виконанні завдання не користуйтеся конструкцію WHERE
-
-
--- Task 9
--- Покажіть середню актуальну зарплату (salaries.to_date більше сьогоднішній даті) для чоловіків і жінок.
+SELECT 
+	ee.first_name AS "First Name"
+    , ee.last_name AS "Last Name"
+    , ee.hire_date AS "Hire Date"
+    ,et.title AS "Title"
+FROM employees.employees AS ee
+INNER JOIN employees.titles AS et 
+	ON(ee.emp_no = et.emp_no)
+WHERE ee.first_name="Margareta" AND ee.last_name="Markovitch";
 
 -- Function 1
 -- SHOW DATABASES;
