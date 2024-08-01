@@ -1,0 +1,833 @@
+/*
+	Lesson 6
+    Date: 2024-07-30
+    
+    Topic:
+		1. Set. Operation on set. Union/Union all
+		2. Subqueries
+		3. CRUD
+		4. DML - (Update/Delete/Insert)
+        
+	Materials:
+		
+*/
+
+-- 63810.7448
+SELECT 
+	emp.emp_no
+	, emp.last_name
+    , sal.from_date
+    , sal.to_date
+    , sal.salary
+FROM  
+	employees.employees as emp
+INNER JOIN 
+	employees.salaries as sal ON (emp.emp_no = sal.emp_no)
+WHERE 
+	sal.salary > 63810.7448;
+
+SELECT *
+ FROM employees;
+
+SELECT * 
+FROM dept_emp;
+
+SELECT * 
+FROM titles;
+
+SELECT *
+ FROM departments;
+
+SELECT ee.emp_no, ee.last_name, ee.first_name ,et.title, ede.dept_no, ed.dept_name
+FROM employees AS ee
+INNER JOIN titles AS et USING(emp_no)
+LEFT JOIN dept_emp AS ede USING(emp_no)
+INNER JOIN departments AS ed ON(ede.dept_no = ed.dept_no)
+ORDER BY ee.emp_no;
+
+SELECT * FROM t1;
+
+# Union - Union ALL 
+
+# UNION - унікальні значення
+# UNION ALL  - дублікати
+
+
+SELECT 1
+UNION 
+SELECT '2'
+UNION 
+SELECT 'Slovo'
+UNION 
+SELECT 4;
+
+SELECT id
+FROM t1
+UNION
+SELECT id
+FROM t2;
+
+SELECT id
+FROM t1
+UNION ALL  
+SELECT id
+FROM t2;
+
+SELECT 1
+UNION  ALL
+SELECT 1
+UNION ALL
+SELECT 'Slovo'
+UNION ALL
+SELECT 4;
+
+
+/*
+	Union 				res
+    1			2			1
+    2			3			2	
+    3			4			3
+							4
+	Union all
+	1
+	2
+	3
+	2
+	3
+	4
+*/
+
+SELECT 1
+UNION 
+SELECT 2;
+
+SELECT 1, 2;
+
+SELECT 1,1 , 1, 1 
+UNION
+SELECT 1, 2, 3, 4;
+
+
+SELECT * 
+FROM ( SELECT 1
+				UNION
+                SELECT 2
+                UNION 
+                SELECT 3) AS o
+UNION 
+SELECT * 
+FROM ( SELECT 2
+				UNION
+                SELECT 3
+                UNION 
+                SELECT 4) AS oo;
+                
+                
+SELECT * 
+FROM ( SELECT 1
+				UNION
+                SELECT 2
+                UNION 
+                SELECT 3) AS o
+UNION ALL
+SELECT * 
+FROM ( SELECT 2
+				UNION
+                SELECT 3
+                UNION 
+                SELECT 4) AS oo;
+			
+	
+SELECT emp_no,  'birth_date'  AS  'Заглушка', birth_date  AS 'flag value'
+FROM employees 
+WHERE emp_no < 10010 AND gender = 'M'  #  1- таблиці, birth_date 
+UNION ALL
+SELECT emp_no, (SELECT AVG(salary) FROM salaries) , salary
+FROM salaries 
+WHERE emp_no BETWEEN 10051 AND 10055 AND salary  > 50000 # 2 - таблиця
+UNION ALL
+SELECT emp_no, 'title' , title
+FROM titles 
+WHERE emp_no BETWEEN 10090 AND 10095 # 3 - таблиця
+;
+/*
+	Task 1. Покажіть значення середня, мінімальна, максимальна зарплати. В результаті потрібно отримати наступну таблицю:
+	Task 2. Покажіть таблицю с двома полями – прізвище , метрика зарплати. 
+		Якщо стать чоловіча метрика зарплати середня зарплата, якщо жіноча мінімальна зарплата. 
+		По рядкам збережіть дублікати і не користуйтеся конструкцією case
+*/
+# Task 1
+SELECT  'Min salary' as Metrics, MIN(salary) as Value
+FROM employees.salaries # table 1 with rows
+union 
+SELECT  'Max salary' , Max(salary) 
+FROM employees.salaries # table 2 with rows
+union 
+SELECT  'Avg salary', AVG(salary)  
+FROM employees.salaries # table 3 with rows
+;
+
+# Task 2
+SELECT 
+	ee.last_name
+    , ROUND(AVG(es.salary), 2) AS Metrics
+    , 'Male_Avg' as gender
+FROM 
+	employees.employees AS ee
+INNER JOIN 
+	employees.salaries AS es ON ee.emp_no = es.emp_no
+WHERE 
+	ee.gender = 'M'
+GROUP BY ee.emp_no
+UNION ALL 
+SELECT 
+	ee.last_name
+    , MIN(es.salary) 
+    , 'Female_Min salary'
+FROM 
+	employees.employees AS ee
+INNER JOIN 
+	employees.salaries AS es ON ee.emp_no = es.emp_no
+WHERE 
+	ee.gender = 'F'
+GROUP BY ee.emp_no
+;
+
+SELECT first_name AS 'Name', 'first_name'  AS 'Flag', emp_no FROM employees.employees 
+UNION 
+SELECT last_name,  'last name', 'Null' FROM employees.employees;
+
+
+SELECT emp_no, birth_date AS date, 'birthday'  AS flag # <- можна використовувати різні колонки
+		FROM employees 
+WHERE emp_no <10010
+UNION 
+SELECT emp_no, hire_date, 'hiredate'
+		FROM employees 
+WHERE emp_no BETWEEN 10060 AND 10070;
+
+
+SELECT emp_no, hire_date AS value,  'hire_date' AS type
+FROM employees
+WHERE emp_no  = 10050
+UNION 
+SELECT emp_no, first_name ,  'first_name' 
+FROM employees
+WHERE emp_no  = 10051
+UNION 
+SELECT emp_no,  last_name ,  'last_name' 
+FROM employees
+WHERE emp_no  = 10052;
+
+SELECT COUNT(DISTINCT first_name)
+FROM employees;
+
+SELECT first_name FROM employees
+UNION 
+SELECT first_name FROM employees;
+
+
+SELECT e.first_name , ee.first_name
+FROM employees AS e
+INNER JOIN employees AS ee USING(emp_no);
+
+
+# Slide 5
+SELECT
+			e.emp_no,   
+            e.first_name,   
+            e.last_name, 
+			NULL  AS dept_no,
+			NULL  AS from_date   
+ FROM 
+			employees AS   e  WHERE last_name  = 'Denis' 
+ UNION  
+ SELECT   
+			NULL  AS emp_no, 
+			NULL  AS first_name, 
+			NULL  AS last_name, 
+			dm.dept_no,   
+			dm.from_date
+ FROM 
+			dept_manager AS dm;
+
+ 
+# Slide 7
+SELECT
+		CONCAT(first_Name, ' ' ,last_Name)  AS fullname,  'like_a'  as flag
+        FROM employees.employees 
+        WHERE first_name LIKE 'a%'  
+UNION 
+        SELECT CONCAT(first_Name,' ',last_Name), 'like_b' 
+        FROM employees.employees 
+        WHERE first_name LIKE 'b%'
+UNION
+    SELECT 1, 'no data after';
+
+
+/*  	
+		Union Task 
+        Task 0: Унікальни назви посад, /*  	
+		Union Task 
+        Task 0: Унікальни назви посад, двома  способами
+		Task 1: Унікальні назви посад і назви департаментів одним списком
+        Task 2: Відобразити всі імена для людей в кого прізвище починається на 'a' і 
+        всі іменна для людей починається  'a'
+*/двома  способами
+		Task 1: Унікальні назви посад і назви департаментів одним списком
+        Task 2: Відобразити всі імена для людей в кого прізвище починається на 'a' і 
+        всі іменна для людей починається  'a'
+*/
+
+# Task 0: Унікальні назви посад, двома способами 
+SELECT * 
+FROM employees.departments;
+
+# First var
+SELECT DISTINCT title 
+FROM employees.titles;
+
+# Second var
+SELECT title FROM employees.titles
+UNION 
+SELECT title FROM employees.titles;
+
+# Thierd var, group by
+SELECT title
+FROM titles
+GROUP BY title;
+
+
+# Task 1: Унікальні назви посад і назви департаментів одним списком
+SELECT  title, 'title'   AS flag 
+FROM employees.titles 
+UNION 
+SELECT  dept_name, 'dept_name' 
+FROM employees.departments;
+
+
+/*
+ Task 2: Відобразити ВСІ імена для людей в кого прізвище починається на 'a' і 
+ ВСІ іменна для людей починається  'a'
+*/
+SELECT first_name AS 'name', 'first_name'
+FROM employees.employees WHERE last_name LIKE 'a%' 
+UNION ALL
+SELECT last_name, 'last_name'
+FROM employees.employees WHERE first_name LIKE 'a%' ;
+
+select *
+from (select first_name
+from employees
+union 
+select first_name
+from employees) as first_name
+union all 
+select * 
+from (select last_name
+from employees
+union
+select last_name
+from employees) as last_name;
+
+/*
+	 Вивезти одним списком всіх співробітників хто отримує зп більше ніж 150000 
+     Next Union:  і в тих у кого діапазон  id від 43620 до 43630 з дублікатами
+*/
+SELECT *
+FROM salaries 
+WHERE emp_no BETWEEN 43620 AND 43630;
+
+
+SELECT emp_no, salary , 'name of column: salary from salaries' AS name_of_column, 'salary more than 150000' AS marker 
+FROM salaries
+WHERE salary > 150000
+UNION ALL 
+SELECT emp_no, 'first_name', 'name of column: first_name' ,  'range between 43620 and 43630'
+FROM salaries 
+WHERE emp_no BETWEEN 43620 AND 43630;
+
+
+/*	Де можемо використовувати sub
+		SELECT - (1 - колонка или 1 - значення)
+		WHERE - (1 -  колонка або  n -  значення)
+		FROM/JOIN - (n - колонок, m - значеннь) + потрібно вказати Alias 
+*/
+
+SELECT *, (SELECT ROUND(avg(salary), 2) FROM employees.salaries) as avg_salary
+FROM 
+	employees.employees;
+
+# will be error 
+SELECT *, (SELECT salary, emp_no FROM employees.salaries) as avg_salary
+FROM 
+	employees.employees;
+    
+    
+SELECT AVG(salary) 
+FROM salaries; # '63810.7448'
+
+SELECT *
+FROM salaries
+WHERE salary > 63810.7448;
+
+
+SELECT emp_no, AVG(salary) as avg_sal, 63810.74 as 'avg_salary_by_company'
+FROM salaries
+GROUP BY emp_no 
+HAVING  AVG(salary) > 63810.7448;
+
+
+SELECT emp_no, AVG(salary) as avg_sal, (SELECT avg(salary) from salaries) avg_salary_by_company
+FROM salaries
+GROUP BY emp_no 
+HAVING AVG(salary) > avg_salary_by_company;
+
+
+SELECT ee.*, (SELECT AVG(salary) FROM salaries)
+FROM  (SELECT * FROM employees)  AS ee
+WHERE ee.emp_no IN ( # Чи входить ee.emp_no в послідовність в підзапиті
+	SELECT emp_no # N = 10005, 10009, 10017 .. etc
+    FROM salaries
+    WHERE salary > 90000
+) AND first_name LIKE 'A%';
+
+(SELECT 2)
+UNION 
+(SELECT 1);
+
+SELECT emp_no, salary, ( select 2), (select 1)
+FROM salaries
+ORDER BY emp_no;
+
+# Вивезти id, імя і призвіще тих співробітників кого ЗП більше ніж 150000(без join)
+
+# Step 1 Знайти всіх кто отримує більше ніж зп 
+SELECT DISTINCT emp_no
+FROM salaries
+WHERE salary > 150000;
+
+/*
+'43624'
+'47978'
+'109334'
+'80823'
+'493158'
+'46439'
+'66793'
+*/
+
+
+# Step 2 Вивезти інформацію
+SELECT emp_no, first_name, last_name
+FROM employees
+WHERE emp_no IN (43624, 46439,47978,66793,80823,109334,493158);
+
+
+# OR with Subqueries
+/*
+	Semi join - join in subqueries, where we return left table, but filtered by right table
+*/
+SELECT DISTINCT emp_no
+								FROM salaries
+								WHERE salary > 150000;
+
+SELECT emp_no, first_name, last_name
+FROM employees # 1
+WHERE emp_no IN ( # Semi Join 
+								SELECT DISTINCT emp_no # 3
+								FROM salaries # 1
+								WHERE salary > 150000; # 2  );
+
+
+# Use Join 
+SELECT es.emp_no, first_name, last_name, (SELECT AVG(salary) FROM salaries), es.salary
+FROM employees AS ee
+INNER JOIN   (
+								SELECT DISTINCT emp_no, salary
+								FROM salaries
+								WHERE salary > 150000 ) AS es USING(emp_no);
+  
+  /* 
+	 Task 0. Використовуючи підзапити напишіть запит який буде повертати 
+     прізвище, ім’я, унікальний ідентифікатор співробітників які хоча б раз працювали 
+     в відділах d005,d006,d007,d008
+*/
+# Tables: employees, dept_emp
+# Output: from employees columns: id, first_name, last_name 
+SELECT 
+	emp_no, first_name, last_name
+FROM 
+	employees.employees
+WHERE 
+	emp_no IN ( # 200_000 -> 173076
+		select emp_no from dept_emp where dept_no IN  ('d005', 'd006', 'd007', 'd008')
+        group by emp_no
+        )
+;
+
+SELECT emp_no, avg(salary) as avg_salary
+FROM employees.salaries
+WHERE salary > (select avg(salary) from employees.salaries)
+GROUP BY emp_no 
+; 
+
+/*
+	Task 1 .Використовуючи підзапити напишіть запит який буде повертати прізвище
+    , ім’я співробітників які отримували найменшу зарплату. 
+    Запит повинен працювати не залежно від того як буде змінюватися мінімальна зарплата протягом існування компанії
+*/
+
+# Step 1. How to find to min salary 
+SELECT MIN(salary) FROM salaries;
+
+# Step 2. Find employees how get salary from Step 1
+SELECT emp_no FROM salaries WHERE salary = (SELECT MIN(salary) FROM salaries);
+
+# Step 3. Get result from step 2 use with employees
+SELECT last_name, first_name  # 3.2
+FROM employees # 3
+WHERE emp_no IN # 3.1
+	(  # 2
+			SELECT emp_no # 2.4
+            FROM salaries # 2.1
+            WHERE # 2.2
+				salary = 
+					(  # 1
+                    SELECT MIN(salary) # 1.2
+                    FROM salaries  # 1.1
+                    )
+			GROUP BY emp_no # 2.3
+			)
+;
+
+SELECT *
+FROM (
+	SELECT emp_no, salary 
+    FROM employees.salaries 
+    WHERE salary BETWEEN 90000 AND 120000
+) AS sal;
+
+/*
+ Task 1 Вивеcти всіх співробітників(emp_no, first_name, last_name, gender), які були коли-небудь менеджерами
+ Реалізувати двома способами(sub in where and sub with join)
+*/
+SELECT *
+ FROM dept_manager;
+ 
+ SELECT *
+ FROM titles;
+
+SELECT * FROM employees;
+
+# Where statement 
+SELECT ee.emp_no, ee.first_name, ee.last_name, ee.gender
+FROM employees.employees AS ee
+WHERE ee.emp_no IN (SELECT emp_no FROM dept_manager);
+
+
+# Inner statement
+SELECT ee.*
+FROM employees.employees AS ee
+INNER JOIN ( SELECT emp_no FROM dept_manager) AS edm USING(emp_no);
+
+
+SELECT ee.*
+FROM ( SELECT emp_no FROM dept_manager) AS edm
+INNER JOIN employees.employees AS ee USING(emp_no);
+
+
+
+# Task 2: Відобразити всіх співробітників в кого ЗП більше ніж середня ЗП співробітника 10050
+         
+# Крок 1. Знайти avg для 10050
+SELECT AVG(salary)
+FROM salaries 
+WHERE emp_no = 10050;
+
+
+SELECT AVG(salary)
+FROM employees.salaries;
+
+SELECT emp_no, AVG(salary)
+FROM employees.salaries
+GROUP BY emp_no;
+
+SELECT * 
+FROM  employees.salaries
+WHERE salary > ROUND(88987.3333, 2);
+
+
+SELECT FLOOR(3.94), CEIL(3.14);
+
+
+# OR
+SELECT *, salary - ROUND(( SELECT AVG(salary) FROM salaries WHERE emp_no = 10050), 2)
+FROM employees.salaries
+WHERE salary > 
+									ROUND(( SELECT AVG(salary) 
+									FROM employees.salaries 
+									WHERE emp_no = 10050), 2)
+ORDER BY emp_no;
+
+
+# Task 3: Відобразити всіх співробітників в кого ЗП, більша ніж середня ЗП по компанії
+# Task 3.1: Відобразити всіх співробітників в кого середня ЗП, більша ніж середня ЗП по компанії
+
+SELECT AVG(salary)
+FROM salaries;
+
+# Task 3.1
+SELECT emp_no, AVG(salary) AS avg_salary, (SELECT AVG(salary) FROM  salaries) as avg_sal_company
+FROM salaries
+GROUP BY emp_no
+HAVING AVG(salary) > (SELECT AVG(salary)
+                 FROM salaries);
+
+
+SELECT emp_no, AVG(salary), (SELECT AVG(salary) FROM salaries)
+FROM salaries
+GROUP BY emp_no
+HAVING AVG(salary) > (SELECT AVG(salary)
+				      FROM salaries);
+
+
+SELECT emp_no, AVG(salary), (SELECT AVG(salary) FROM salaries)
+FROM salaries
+GROUP BY emp_no
+HAVING AVG(salary) > (SELECT AVG(salary)
+				      FROM salaries);
+  
+  
+
+
+
+                      
+SELECT emp_no ,AVG(salary) AS 'Avg employees',  (SELECT AVG(salary) FROM salaries) AS 'Avg по компанії'
+FROM employees.salaries
+WHERE salary > (SELECT AVG(salary) FROM salaries)
+GROUP BY emp_no
+ORDER BY emp_no;
+
+
+
+
+# Deep Sub
+# Task 4: Знайти всіх співробітників, у яких зп більше ніж середне зп працівника з найбільшим номером
+
+# Крок 1: знайти найбільший номер
+SELECT MAX(emp_no)
+FROM salaries;
+
+SELECT emp_no
+FROM salaries
+ORDER BY emp_no DESC
+LIMIT 1;
+
+
+# Крок 2
+SELECT  AVG(salary)
+FROM salaries
+WHERE emp_no = (SELECT emp_no
+FROM salaries
+ORDER BY emp_no DESC
+LIMIT 1 );
+
+
+
+SELECT *
+FROM employees.salaries
+WHERE salary > 
+								(	SELECT AVG(salary) 
+									FROM employees.salaries 
+									WHERE emp_no = 
+																	(SELECT  MAX(emp_no)
+                                                                    FROM employees.employees)
+                                    )
+ORDER BY emp_no ASC;
+
+
+ # Step 1 - find more deep sub
+ SELECT  MAX(emp_no)  
+ FROM employees.employees;
+  
+  
+ # Step 2 - find less deep sub(up all time)
+SELECT AVG(salary) 
+FROM employees.salaries  # 70625.0000
+WHERE emp_no = 499999;
+     
+     
+# Step 3 - find last sub
+SELECT * 
+FROM employees.salaries
+WHERE salary > 70625.0000 
+ORDER BY salary;
+
+
+
+/*
+	Task 5: Вивезти номер співробітників(чоловіків), в яких зп більше ніж середня ЗП серед жінок 
+*/
+SELECT   e.emp_no, s.salary, gender
+FROM employees as e
+INNER JOIN salaries as s ON (s.emp_no = e.emp_no)
+WHERE e.gender = 'M' AND s.salary > 
+	(SELECT AVG(salary) FROM salaries WHERE emp_no IN 
+						(
+						SELECT emp_no
+						FROM employees
+						WHERE gender = 'F'
+						)
+);
+
+
+SELECT * 
+FROM employees 
+WHERE gender  = 'f';
+
+SELECT * 
+FROM salaries;
+
+SELECT AVG(salary)
+FROM salaries 
+WHERE emp_no IN (
+	SELECT emp_no 
+    FROM employees
+    WHERE gender = 'F'
+);
+
+SELECT AVG(salary) 
+FROM salaries 
+WHERE emp_no IN 
+				(SELECT emp_no
+				FROM employees.employees
+				WHERE gender = 'F');
+                    
+                    
+SELECT @avg_gender :=  	
+		  ROUND(AVG(salary) , 2)
+                                            FROM salaries
+                                            WHERE emp_no IN 
+															(SELECT emp_no 
+                                                            FROM employees 
+                                                            WHERE gender = 'f');
+                                              
+                                              
+SELECT emp_no, gender, salary, @avg_gender
+FROM employees AS ee
+INNER JOIN salaries AS es USING(emp_no)
+WHERE gender = 'M' AND  es.salary > @avg_gender;
+
+
+
+SELECT DISTINCT emp_no, ee.gender, @avg_gender, salary , 
+						(
+											SELECT AVG(salary) 
+                                            FROM salaries
+                                            WHERE emp_no IN 
+															(SELECT emp_no 
+                                                            FROM employees 
+                                                            WHERE gender = 'f')
+						) AS 'Avg жінок'
+FROM salaries
+INNER JOIN employees AS ee USING(emp_no)
+WHERE salary > (
+						SELECT AVG(salary)
+						FROM salaries 
+						WHERE emp_no IN (
+														SELECT emp_no 
+														FROM employees
+														WHERE gender = 'F'
+)) AND emp_no IN (SELECT emp_no FROM employees WHERE gender = 'M');
+
+
+# Slide 12 
+# Task 1
+/*
+	Anti join - join in subqueries, where we return left table, but value in left table, NOT IN right table
+*/
+SELECT 
+    first_name, last_name, emp_no
+FROM
+    employees
+WHERE
+    emp_no NOT IN (SELECT DISTINCT
+            emp_no
+        FROM
+            dept_manager);
+            
+
+# Task 2
+SELECT 
+    COUNT(emp_no)
+FROM
+    employees
+WHERE
+    emp_no NOT IN (SELECT DISTINCT
+            emp_no
+        FROM
+            dept_manager);
+            
+
+
+SELECT 
+        YEAR(from_date), SUM(salary) AS salary
+    FROM
+        salaries
+    GROUP BY YEAR(from_date);
+    
+# Slide 13
+SELECT 
+    MIN(t1.salary), MAX(t1.salary), AVG(t1.salary)
+FROM
+    (SELECT 
+        YEAR(from_date), SUM(salary) AS salary
+    FROM
+        salaries
+    GROUP BY YEAR(from_date)) AS t1;
+
+
+# Slide 14
+SELECT 
+    first_name,
+    last_name,
+    salary,
+    (SELECT 
+            ROUND(AVG(salary), 0)
+        FROM
+            salaries) average_salary,
+    salary - (SELECT 
+            ROUND(AVG(salary), 0)
+        FROM
+            salaries) difference 
+FROM
+    (SELECT 
+        t1.*, t2.salary
+    FROM
+        employees t1
+    INNER JOIN salaries t2 ON t1.emp_no = t2.emp_no) AS joined_tbls
+ORDER BY first_name , last_name;
+
+
+/* Add task 
+	Task 1: Відобразити всіх співробітників із dept, у котрих найвище зп - Доп. практика
+*/
+
+# DDL - data defination language 
+
+# CREATE TABLE 
+
+CREATE TABLE tasks1 ( 
+	task_id INT AUTO_INCREMENT # <name_of_column> <type_of_date>  <constraints>
+    , title VARCHAR(255) NOT NULL
+    , start_date DATE
+    , due_date DATE
+    , priority TINYINT NOT NULL DEFAULT 3 # -127 and 128 - with unsi 255
+    , description TEXT
+    , PRIMARY KEY (task_id)
+);
+DESC tasks1;
+
+SELECT *
+FROM tasks1;
