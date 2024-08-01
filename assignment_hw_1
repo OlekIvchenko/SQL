@@ -9,17 +9,16 @@ ORDER BY hire_date DESC;
 -- Task 2
 -- Покажіть імена всіх співробітників, які мають однакові ім’я та прізвище
 -- Show the names of all employees who have the same first and last name
-SELECT first_name, last_name, COUNT(*) AS count
+SELECT first_name, last_name
 FROM employees.employees
-GROUP BY first_name, last_name
-HAVING COUNT(*) > 1;
+WHERE first_name = last_name;
 
 -- Task 3
 -- Покажіть номери співробітників 10001, 10002, 10003 і 10004. Виберіть стовпці: first_name, last_name, gender, hire_date.
 -- Show the employee numbers 10001, 10002, 10003, and 10004. Select the columns: first_name, last_name, gender, hire_date.
 SELECT emp_no, first_name, last_name, gender, hire_date
 FROM employees.employees
-WHERE emp_no BETWEEN '10000' AND '10005';
+WHERE emp_no BETWEEN '10000' AND '10004';
 
 -- Task 4
 -- Виберіть назви всіх департаментів, назви яких мають букву «а» на будь-якій позиції або «е» на другому місці
@@ -39,7 +38,7 @@ SELECT
     MONTH(birth_date) AS born_in, 
     DAYOFWEEK(hire_date) AS day_of_week
 FROM employees.employees
-WHERE TIMESTAMPDIFF(YEAR, birth_date, hire_date) = 45
+WHERE gender="M" AND TIMESTAMPDIFF(YEAR, birth_date, hire_date) = 45
   AND MONTH(birth_date) = 10
   AND DAYOFWEEK(hire_date) = 1;
   
@@ -55,7 +54,7 @@ WHERE from_date > '1995-06-01';
 -- In the dept_emp table, show the number of employees by department (dept_no) where to_date is greater than the current date. Display departments with more than 13,000 employees. Sort by the number of employees.
 SELECT dept_no, COUNT(*) AS employee_count
 FROM employees.dept_emp
-WHERE to_date > CURRENT_DATE
+WHERE CURRENT_DATE() BETWEEN from_date AND to_date
 GROUP BY dept_no
 HAVING employee_count > 13000
 ORDER BY employee_count DESC;
@@ -63,5 +62,6 @@ ORDER BY employee_count DESC;
 -- Task 8
 -- Покажіть мінімальну та максимальну зарплати по працівникам.
 -- Show the minimum and maximum salaries for employees.
-SELECT MAX(salary) AS max_salary, MIN(salary) AS min_salary
-FROM employees.salaries;
+SELECT 	emp_no, MAX(salary) AS max_salary, MIN(salary) AS min_salary
+FROM employees.salaries
+GROUP BY emp_no;
