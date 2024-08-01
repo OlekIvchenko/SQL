@@ -1,0 +1,242 @@
+From: https://github.com/Calvin-alis/sql_bi_23_27/blob/master/Lesson%20files/add_lesson_2024-07-28.sql
+
+
+
+-- Task 1. 
+-- Вивести Прізвище, посаду на поточний момент і назву відділу співробітників на поточний момент
+SELECT 
+	ee.last_name AS "Last Name"
+	, et.title AS "Position"
+	, ed.dept_name AS "Departments Name"
+FROM 
+	employees.employees AS ee
+INNER JOIN employees.titles AS et 
+	ON ee.emp_no = et.emp_no
+INNER JOIN employees.dept_emp AS ede 
+	ON ee.emp_no = ede.emp_no
+INNER JOIN employees.departments AS ed 
+	ON ede.dept_no = ed.dept_no
+WHERE et.to_date = '9999-01-01' AND ede.to_date = '9999-01-01';
+
+-- Task 2.
+-- Вивести Ім'я та актуальну ЗП співробітників, для тих в кого відсутня, показати 0
+SELECT 
+    ee.first_name AS "First Name"
+    , COALESCE(es.salary, 0) AS "Current Salary"
+FROM 
+    employees.employees AS ee
+LEFT JOIN 
+    employees.salaries As es 
+		ON ee.emp_no = es.emp_no
+    AND es.to_date = '9999-01-01'
+ORDER BY ee.first_name;
+
+-- Task 3.
+-- Вивести Ім'я та актуальну ЗП співробітників жіночої статі, для тих в кого відсутня, показати 0
+SELECT 
+    ee.first_name AS "First Name"
+    , COALESCE(es.salary, 0) AS "Current Salary"
+FROM 
+    employees.employees AS ee
+LEFT JOIN 
+    employees.salaries AS es 
+		ON ee.emp_no = es.emp_no
+    AND es.to_date = '9999-01-01'
+WHERE ee.gender = 'F'
+ORDER BY ee.first_name;
+
+-- Task 4.
+-- Вивести Ім'я, emp_no і максимальну ЗП співробітників жіночої статі, в кого сумарна ЗП понад 1 млн;
+SELECT 
+    ee.first_name AS "First Name"
+	, ee.emp_no AS "Employee Number"
+    , MAX(es.salary) AS "Max Salary"
+FROM 
+    employees.employees ee
+INNER JOIN 
+	employees.salaries AS es 
+		ON ee.emp_no = es.emp_no
+WHERE ee.gender = 'F'
+GROUP BY ee.emp_no
+HAVING SUM(es.salary) > 1000000
+ORDER BY MAX(es.salary) DESC;
+
+-- Task 5.
+-- Вивести Прізвище і період з/до за який вони отримували таку ЗП всіх співробітників в кого ЗП більше ніж середня ЗП по компанії;
+WITH avg_salary AS (
+    SELECT AVG(salary) AS company_avg_salary
+    FROM employees.salaries
+)
+SELECT 
+    ee.last_name AS "Last Date"
+    , es.from_date AS "Salary From Date"
+    , es.to_date AS "Salary To Date"
+    , es.salary
+-- 	, company_avg_salary
+FROM 
+    employees.employees ee
+INNER JOIN 
+    employees.salaries es ON ee.emp_no = es.emp_no
+CROSS JOIN avg_salary
+WHERE es.salary > avg_salary.company_avg_salary
+ORDER BY es.salary ASC;
+
+-- Task 6.
+-- Вивести Прізвище і мінімальну ЗП кожного співробітника і максимальну ЗП по компанії(реалізувати двома способами);
+-- option 1
+SELECT 
+    ee.last_name AS "Last Name"
+    , MIN(es.salary) AS "MIN Salary"
+    , max_salary.max_company_salary AS "MAX Company Salary"
+FROM 
+    employees.employees AS ee
+INNER JOIN 
+    salaries AS es 
+		ON ee.emp_no = es.emp_no
+CROSS JOIN 
+    (SELECT MAX(salary) AS max_company_salary FROM employees.salaries) AS max_salary
+GROUP BY ee.last_name, max_salary.max_company_salary
+ORDER BY "MIN Salary";
+    
+    
+-- option 2
+WITH max_salary AS (
+    SELECT MAX(salary) AS max_company_salary FROM employees.salaries
+)
+SELECT 
+    ee.last_name AS "Last Name"
+    , MIN(es.salary) AS "MIN Salary"
+    , max_salary.max_company_salary AS "MAX Company Salary"
+FROM 
+    employees.employees AS ee
+INNER JOIN 
+    employees.salaries AS es 
+		ON ee.emp_no = es.emp_no
+CROSS JOIN max_salary
+GROUP BY ee.last_name, max_salary.max_company_salary
+ORDER BY "MIN Salary";
+
+-- Task 7. 
+-- Вивести Ім'я співробітників, дату народження і періоди(з і до) для тих в кого ЗП дорівняє максимальній заробітній платі за найперший звітний період(from_date)
+SELECT 
+    ee.first_name AS "First Name"
+    , ee.birth_date AS "Birth Date"
+    , es.from_date AS "Salary From Date"
+    , es.to_date AS "Salary To Date"
+FROM 
+    employees.employees AS ee
+INNER JOIN 
+    employees.salaries es 
+		ON ee.emp_no = es.emp_no
+WHERE 
+    es.salary = (
+        SELECT 
+            MAX(salary)
+        FROM 
+            employees.salaries
+        WHERE 
+            from_date = (
+                SELECT 
+                    MIN(from_date)
+                FROM 
+                    employees.salaries
+            )
+    )
+    AND es.from_date = (
+        SELECT 
+            MIN(from_date)
+        FROM 
+            employees.salaries
+    );
+
+-- Task 8. 
+-- Вивести порядковий номер співробітників, період отримання ЗП(з і до), хто працював на посаді, яка містить текст 'Engineer', 
+-- мав ЗП більше ніж середню серед співробітників, які працювали на посаді, яка містить текст 'Staff'; 
+SELECT DISTINCT
+    ee.emp_no AS "Employee Number"
+    , es.from_date AS "Salary From Date"
+    , es.to_date AS "Salary To Date"
+--  , et.title
+FROM
+    employees.employees AS ee
+INNER JOIN
+    employees.titles AS et 
+		ON ee.emp_no = et.emp_no
+INNER JOIN
+    employees.salaries AS es 
+		ON ee.emp_no = es.emp_no
+WHERE 
+    et.title LIKE '%Engineer%'
+    AND es.salary > (
+        SELECT 
+            AVG(s_inner.salary)
+        FROM 
+            employees.salaries AS s_inner
+        INNER JOIN 
+            employees.titles AS t_inner 
+				ON s_inner.emp_no = t_inner.emp_no
+        WHERE 
+            t_inner.title LIKE '%Staff%'
+    )
+    AND es.from_date <= et.to_date 
+    AND es.to_date >= et.from_date
+ORDER BY ee.emp_no;
+
+-- Task 9. 
+-- Вивести назви посад і відділів з дублікатами;
+SELECT 
+    et.title AS "Job Title"
+    , ed.dept_name AS "Department Name"
+FROM 
+    employees.titles AS et
+INNER JOIN
+    employees.dept_emp AS ede 
+		ON et.emp_no = ede.emp_no
+INNER JOIN 
+    employees.departments AS ed 
+		ON ede.dept_no = ed.dept_no
+WHERE
+    et.to_date > CURDATE()
+    AND ede.to_date > CURDATE()
+ORDER BY et.title;
+    
+-- Task 10. 
+-- Вивести, лише унікальні значення назви посад і відділів з характеристикою, з якої таблиці взята інформація;
+SELECT DISTINCT 
+	title AS "Unique Position and Departments"
+    , 'employees.title' AS "Source"
+FROM employees.titles
+UNION
+SELECT DISTINCT 
+	dept_name AS dept_name
+    , 'employees.department' AS source
+FROM employees.departments;
+    
+-- Task 11. 
+-- Вивести всіх чоловіків, хто працює в відділі 'Finance' в поточний момент, колонку з текстом 'Men' і нижче списком всіх жінок, хто працював у відділі 'Production' на момент 1999-01-01 і колонку з текстом 'Women'
+SELECT 
+	ee.first_name AS "First Name"
+    , ee.last_name AS "Last Name"
+    , 'Men' AS "Gender"
+FROM 
+	employees.employees AS ee
+INNER JOIN
+	employees.dept_emp AS ede 
+		ON ee.emp_no = ede.emp_no
+INNER JOIN employees.departments AS ed 
+		ON ede.dept_no = ed.dept_no
+WHERE ee.gender = 'M' AND ed.dept_name = 'Finance' AND ede.to_date = '9999-01-01'
+UNION ALL
+SELECT 
+	ee.first_name AS "First Name"
+    , ee.last_name AS "Last Name"
+    , 'Women' AS "Gender"
+FROM 
+	employees.employees AS ee
+INNER JOIN 
+	employees.dept_emp AS ede 
+		ON ee.emp_no = ede.emp_no
+INNER JOIN 
+	employees.departments AS ed 
+		ON ede.dept_no = ed.dept_no
+WHERE ee.gender = 'F' AND ed.dept_name = 'Production' AND '1999-01-01' BETWEEN ede.from_date AND ede.to_date;
