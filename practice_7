@@ -131,3 +131,73 @@ SET
 	salary = salary - 100000
 WHERE
 salary > 80000;
+
+-- Task 3
+-- 1. Create database with name: test_db
+CREATE DATABASE IF NOT EXISTS test_db;
+USE test_db;
+
+-- 2. Create tables like: employees with name: emplo_test, titles with name: titles_test
+CREATE TABLE IF NOT EXISTS emplo_test LIKE employees.employees;
+DESC emplo_test;
+SELECT * FROM emplo_test;
+
+CREATE TABLE IF NOT EXISTS titles_test LIKE employees.titles;
+DESC titles_test;
+SELECT * FROM titles_test;
+
+-- 3. Insert data in two tables using insert with select 
+START TRANSACTION;
+
+INSERT INTO emplo_test
+SELECT *
+FROM employees.employees;
+
+SELECT *
+FROM emplo_test
+LIMIT 10;
+
+# 1.1
+SAVEPOINT insert_emplo_test;
+
+INSERT INTO titles_test
+SELECT *
+FROM employees.titles;
+
+SELECT *
+FROM  titles_test
+LIMIT 10;
+
+# 1.2
+SAVEPOINT insert_titles_test;
+
+# finish 
+COMMIT;  # ROLLBACK
+
+-- 4. Update rows for 10051, change name to 'Test', birth_Date to current_Date, and do this for 10056 to 10061
+
+START TRANSACTION;
+
+SAVEPOINT emplo_test;
+
+UPDATE emplo_test
+SET first_name = 'Test', birth_date = curdate()
+WHERE 	emp_no = 10051 or emp_no BETWEEN 10056 AND 10061;
+	
+SELECT *
+FROM emplo_test;
+
+ROLLBACK TO emplo_test; 
+
+-- 5. Delete rows from 10051
+
+SAVEPOINT delete_emp_no;
+
+DELETE 
+FROM emplo_test
+WHERE emp_no > 10051;
+
+SELECT *
+FROM emplo_test;
+
+COMMIT;
