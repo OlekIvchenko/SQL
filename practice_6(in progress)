@@ -1,1 +1,115 @@
+-- Example 1
+SELECT emp_no,  'birth_date'  AS  'Заглушка', birth_date  AS 'flag value'
+FROM employees 
+WHERE emp_no < 10010 AND gender = 'M'  #  1- таблиці, birth_date 
+UNION ALL
+SELECT emp_no, (SELECT AVG(salary) FROM salaries) , salary
+FROM salaries 
+WHERE emp_no BETWEEN 10051 AND 10055 AND salary  > 50000 # 2 - таблиця
+UNION ALL
+SELECT emp_no, 'title' , title
+FROM titles 
+WHERE emp_no BETWEEN 10090 AND 10095 # 3 - таблиця
 
+-- Task 1.
+-- Покажіть значення середня, мінімальна, максимальна зарплати. В результаті потрібно отримати наступну таблицю:
+SELECT "Min Salary" AS Metrics, MIN(salary) AS Value
+FROM employees.salaries
+UNION
+SELECT "Max Salary", MAX(salary)
+FROM employees.salaries
+UNION
+SELECT "Avg Salary", AVG(salary)
+FROM employees.salaries;
+
+ -- Task 2. 
+ -- Покажіть таблицю с двома полями – прізвище , метрика зарплати. Якщо стать чоловіча метрика зарплати середня зарплата, якщо жіноча мінімальна зарплата. 
+ -- По рядкам збережіть дублікати і не користуйтеся конструкцією case
+
+SELECT 
+ ee.last_name
+    , ROUND(AVG(es.salary), 2) AS Metrics
+    , 'Male_Avg' as gender
+FROM 
+ employees.employees AS ee
+INNER JOIN 
+ employees.salaries AS es ON ee.emp_no = es.emp_no
+WHERE 
+ ee.gender = 'M'
+GROUP BY ee.emp_no
+UNION ALL 
+SELECT 
+ ee.last_name
+    , MIN(es.salary) 
+    , 'Female_Min salary'
+FROM 
+ employees.employees AS ee
+INNER JOIN 
+ employees.salaries AS es ON ee.emp_no = es.emp_no
+WHERE 
+ ee.gender = 'F'
+GROUP BY ee.emp_no
+;
+
+-- Task 4. 
+-- Вивезти id, імя і призвіще тих співробітників кого ЗП більше ніж 150000 (без join)
+SELECT emp_no, first_name, last_name
+FROM employees
+WHERE emp_no IN ( # Semi Join 
+        SELECT DISTINCT emp_no
+        FROM salaries
+        WHERE salary > 150000 );
+
+-- Task 5.
+-- Використовуючи підзапити напишіть запит який буде повертати прізвище, ім’я, унікальний ідентифікатор співробітників які хоча б раз працювали 
+-- в відділах d005,d006,d007,d008;
+SELECT 
+ emp_no, first_name, last_name
+FROM 
+ employees.employees
+WHERE 
+ emp_no IN ( select emp_no from dept_emp where dept_no IN  ('d005', 'd006', 'd007', 'd008') group by emp_no)
+;
+
+-- Example 2
+SELECT *
+FROM employees.salaries
+WHERE salary > (select avg(salary) from employees.salaries);
+
+-- Task 6.
+-- Використовуючи підзапити напишіть запит який буде повертати прізвище, ім’я співробітників які отримували найменшу зарплату. 
+-- Запит повинен працювати не залежно від того як буде змінюватися мінімальна зарплата протягом існування компанії
+SELECT last_name, first_name  # 3.2
+FROM employees # 3
+WHERE emp_no IN # 3.1
+ (  # 2
+   SELECT emp_no # 2.4
+            FROM salaries # 2.1
+            WHERE # 2.2
+    salary = 
+     (  # 1
+                    SELECT MIN(salary) # 1.2
+                    FROM salaries  # 1.1
+                    )
+   GROUP BY emp_no # 2.3
+   )
+;
+
+-- Example 3
+SELECT *
+FROM (
+ SELECT emp_no, salary 
+    FROM employees.salaries 
+    WHERE salary BETWEEN 90000 AND 120000
+) AS sal;
+
+-- Example 4
+SELECT ee.*
+FROM employees.employees AS ee
+INNER JOIN ( SELECT emp_no FROM dept_manager) AS edm USING(emp_no);
+
+-- Task 7.
+-- https://leetcode.com/problems/customer-who-visited-but-did-not-make-any-transactions/description/?envType=study-plan-v2&envId=top-sql-50
+
+-- Task 8.
+-- https://leetcode.com/problems/employees-whose-manager-left-the-company/
