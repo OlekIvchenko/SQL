@@ -1,1 +1,133 @@
+-- Example
+CREATE DATABASE IF NOT EXISTS lesson_7;
 
+-- Example
+CREATE TABLE  IF NOT EXISTS tasks (
+ task_id INT AUTO_INCREMENT, # +1 
+ title VARCHAR(255) NOT NULL, 
+    start_date DATE,
+    due_date DATE,
+    priority TINYINT NOT NULL DEFAULT 3,
+    description TEXT,
+    PRIMARY KEY(task_id)
+);
+
+-- Example
+DESC tasks; #  Показати структуру
+
+-- Example
+SELECT *
+FROM tasks;
+
+-- Example
+INSERT INTO tasks(title, priority)  VALUES 
+      ('Learn mysql INSERT', 1);
+
+-- Example
+INSERT INTO tasks(title, priority)
+VALUES ('Learn mysql INSERT with Default', DEFAULT); # Звертаемся до default значення
+
+-- Task 1. Try Insert
+-- Вставити в таблицю Tasks - значення назви(title) 'test', пріорітет - використати дефолтний 
+-- дата_до якої виконати - поточна
+-- дата початку - 5 років від поточної 
+INSERT INTO tasks(title, start_date, due_date, priority, description)
+ VALUES ('Learn mysql INSERT', CURRENT_DATE(),CURRENT_DATE(),1, 'test');
+
+-- Example
+INSERT INTO tasks VALUES 
+        (8,'Learn mysql INSERT', CURRENT_DATE(),CURRENT_DATE(),1 ,'test2'),
+                                (9,'Learn mysql INSERT', CURRENT_DATE(),CURRENT_DATE(), 2, 'test3'),
+                                (10,'Learn mysql INSERT', CURRENT_DATE(),CURRENT_DATE(), 4 ,'test4'),
+                                (12,'Learn mysql INSERT', CURRENT_DATE(),CURRENT_DATE(), 5 , 'test5');
+
+-- Example
+INSERT INTO tasks(title, priority)  # Вставка автоматична
+SELECT dept_name, 1
+FROM employees.departments;
+
+-- Example
+CREATE TABLE  lesson_7.emplo_dup1 
+LIKE # Скопіювати структуру наступної таблиці
+employees.employees;
+
+-- Example
+INSERT INTO emplo_dup1 
+SELECT * 
+FROM employees.employees 
+WHERE emp_no > 10050;
+
+-- Example
+# 1 - дія 
+SELECT * 
+FROM emplo_dup1 
+WHERE emp_no = 10051;
+
+# 2 - дія
+UPDATE emplo_dup1  # обираемо таблицю
+SET  # вказати зміну
+first_name  = 'new name', last_name = 'new last name' 
+WHERE emp_no = 10051 OR emp_no = 10052;
+
+SELECT *
+FROM emplo_dup1;
+
+-- Task 2. 
+-- Змінити дату прийняття на роботу, 
+-- для всіх у кого id більше 10050 і рік прийняття на роботу більше ніж 1990
+-- hire_date - на поточну
+
+SELECT *
+FROM emplo_dup1
+WHERE YEAR(hire_date) > 1990;
+
+UPDATE emplo_dup1
+SET
+	hire_date = CURRENT_DATE()
+WHERE emp_no > 10050 AND hire_date > '1990-01-01';
+
+SELECT * 
+FROM emplo_dup1;
+
+CREATE TABLE salaries_dup LIKE employees.salaries;
+
+DESC salaries_dup;
+
+INSERT INTO salaries_dup
+SELECT *
+FROM employees.salaries
+WHERE emp_no > 10050 OR salary > 150000;
+
+SELECT *
+FROM salaries_dup;
+
+-- Example
+CREATE TABLE lesson_7.titles_dup LIKE employees.titles;
+
+INSERT INTO titles_dup
+SELECT *
+FROM employees.titles
+WHERE emp_no > 10050;
+
+SELECT * 
+FROM titles_dup;
+
+SHOW TABLES;
+
+-- Example
+UPDATE emplo_dup1
+INNER JOIN lesson_7.titles_dup USING(emp_no)
+SET
+first_name = title, 
+last_name = title,
+hire_date = from_date
+WHERE NOW() BETWEEN from_date AND to_date AND length(titles_dup.title) < 10;
+
+-- Example
+UPDATE emplo_dup1  
+INNER JOIN lesson_7.salaries_dup USING(emp_no)
+SET
+	first_name = 'some_test_valu',
+	salary = salary - 100000
+WHERE
+salary > 80000;
