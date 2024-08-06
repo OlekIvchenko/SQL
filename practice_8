@@ -1,1 +1,62 @@
+-- Example
+CREATE TABLE IF NOT EXISTS tasks (
+ task_id INT AUTO_INCREMENT PRIMARY KEY,
+ title VARCHAR(255) NOT NULL,
+ start_date DATE,
+ due_date DATE,
+ status TINYINT NOT NULL,
+ priority  TINYINT  UNSIGNED NOT NULL,
+ description TEXT,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE = INNODB;
 
+-- Example
+DESCRIBE tasks;
+
+-- Example
+USE test_create_db;
+
+-- Example
+CREATE DATABASE  test_create_db;
+
+-- Example
+SHOW FULL PROCESSLIST;
+
+-- Example
+/*
+SELECT constraint_name, table_name, constraint_type
+FROM information_schema.table_constraints
+WHERE table_name = 'название_таблицы'
+ORDER BY constraint_type;
+*/
+SELECT constraint_name, table_name, constraint_type
+FROM information_schema.table_constraints
+WHERE table_name = 'tasks' # Назва таблиці 
+ORDER BY constraint_type; # поглянути check
+
+-- Example
+CREATE TABLE IF NOT EXISTS checklists (
+     todo_id     INT         AUTO_INCREMENT,
+     task_id     INT ,
+     todo      VARCHAR(255)    NOT NULL,
+     is_completed BOOLEAN      NOT NULL      DEFAULT FALSE,
+    
+     PRIMARY KEY (todo_id , task_id),
+                     FOREIGN KEY (task_id) REFERENCES tasks (task_id) ON UPDATE RESTRICT ON DELETE CASCADE 
+                    );
+
+-- Example
+SELECT *
+FROM information_schema.INNODB_FOREIGN_COLS;
+
+-- Example
+CREATE TABLE IF NOT EXISTS checklists2 (
+    todo_id INT AUTO_INCREMENT,
+    task_id INT,
+    todo VARCHAR(255) NOT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (todo_id , task_id)
+    
+    ,CONSTRAINT constr_task FOREIGN KEY (task_id)
+        REFERENCES tasks (task_id)
+        ON UPDATE RESTRICT ON DELETE CASCADE );
