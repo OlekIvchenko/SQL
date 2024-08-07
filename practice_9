@@ -1,1 +1,197 @@
+-- Example
+CREATE TABLE IF NOT EXISTS posts (
+   id     INT           AUTO_INCREMENT     PRIMARY KEY,
+   title     VARCHAR(255)      NOT NULL,
+   excerpt   VARCHAR(400),
+   content   TEXT,
+   created_at DATETIME,
+   updated_at  DATETIME
+);
 
+# Task 1.  З таблиці posts, видалити title
+ALTER TABLE posts
+DROP COLUMN title;
+
+DESC posts;
+
+# Task 2. Добавити колонку time, з типом date
+ALTER TABLE posts
+ADD COLUMN time_ DATE AFTER content;
+
+DESC posts;
+
+# Task 3. Delete column first_column
+ALTER TABLE posts
+DROP COLUMN first_column;
+
+DESC posts;
+
+# Task 4. Add new column with name: test_unique, type: varchar(255) with constraints not null default 'none'
+ALTER TABLE posts
+ADD COLUMN test_unique VARCHAR(255) NOT NULL DEFAULT 'none';
+
+DESC posts;
+
+
+
+
+
+-- Example
+ALTER TABLE posts
+ADD COLUMN d VARCHAR(15);
+
+-- Example
+ALTER TABLE posts
+ADD COLUMN d_after_id VARCHAR(15) AFTER id ;
+
+-- Example
+DESC posts;
+
+-- Example
+ALTER TABLE posts
+ADD COLUMN first_column VARCHAR(15) FIRST;
+
+
+
+
+
+-- Example
+CREATE TABLE users (
+ user_id      INT         AUTO_INCREMENT        PRIMARY KEY,
+ username     VARCHAR(40),
+ password     VARCHAR(255),
+ email       VARCHAR(255) 
+    );
+
+-- Example
+CREATE TABLE roles(
+ role_id INT AUTO_INCREMENT,
+ role_name VARCHAR(50),
+ PRIMARY KEY(role_id)
+);
+
+-- Example
+CREATE TABLE user_roles(
+ user_id INT,
+ role_id INT,
+ PRIMARY KEY(user_id,role_id),
+ FOREIGN KEY(user_id) REFERENCES users(user_id),
+ FOREIGN KEY(role_id) REFERENCES roles(role_id)
+);
+
+-- Example
+CREATE TABLE pk_demos(
+ id INT,
+ title VARCHAR(255) NOT NULL
+);
+
+-- Example
+CREATE TABLE categories (
+    categoryId INT AUTO_INCREMENT PRIMARY KEY,
+    categoryName VARCHAR(100) NOT NULL
+)  ENGINE=INNODB;
+
+-- Example
+CREATE TABLE products (
+    productId INT AUTO_INCREMENT PRIMARY KEY,
+    productName VARCHAR(100) NOT NULL,
+    categoryId INT,
+    CONSTRAINT fk_category FOREIGN KEY (categoryId) REFERENCES categories (categoryId) # RESRTICT
+)  ENGINE=INNODB;
+
+
+
+-- Task 1.
+ /* 
+ Виконати запит на знаходження всіх співробітників в кого імя Parto (виконати без створення індексів) 
+ Записати час виконання + виведення. 
+ Зробити Explain для запиту.
+ Створити індекс для first_name і порівняти результати
+ */
+
+SELECT *
+FROM employees.employees
+WHERE first_name LIKE 'Parto'; # 0.221 sec
+
+EXPLAIN SELECT *
+FROM employees.employees
+WHERE first_name LIKE 'Parto';
+
+CREATE INDEX firstName ON employees.employees(first_Name);
+
+EXPLAIN SELECT *
+FROM employees.employees
+WHERE first_name LIKE 'Parto'; # 0,0035 sec
+
+SELECT 0.221 / 0,0035; # 35 times
+
+
+-- Example
+CREATE INDEX last_Name ON employees(last_Name);
+
+
+
+-- Example
+EXPLAIN SELECT emp_no, last_Name, first_Name
+FROM employees  IGNORE INDEX (last_Name, firstName) # Вказуємо індекси які будуть ігноровані 
+WHERE last_Name LIKE 'Ranta';
+
+-- Example
+EXPLAIN SELECT *  FROM
+employees.employees FORCE INDEX (hireDate) # Вказуємо який індекс потрібно використати (ключове слово FORCE)
+WHERE hire_date BETWEEN '1985-01-01' AND '1999-01-01';
+
+-- Example
+ALTER TABLE employees.employees 
+ALTER INDEX last_Name INVISIBLE;
+
+-- Example
+SHOW INDEX FROM employees;
+
+-- Example
+DROP INDEX last_Name ON employees
+ALGORITHM = COPY # Створюється копія таблиці без індекс(без можливості insert/delete)
+
+LOCK = DEFAULT;
+
+-- Example
+DROP INDEX PRIMARY ON t;
+
+-- Example
+CREATE INDEX sal_desc ON salaries(salary DESC);
+
+-- Example
+CREATE TABLE IF NOT EXISTS contacts (
+ id        INT             AUTO_INCREMENT    PRIMARY KEY,
+ first_name     VARCHAR(50)        NOT NULL,
+ last_name     VARCHAR(50)        NOT NULL,
+ phone       VARCHAR(15)        NOT NULL,
+ email       VARCHAR(100)        NOT NULL,       
+    UNIQUE KEY unique_email (email)
+);
+
+-- Example
+CREATE  UNIQUE  INDEX name_phone 
+ON contacts(first_name,last_name, phone);
+
+-- Example
+CREATE TABLE complex_talbe (
+c1  INT PRIMARY KEY,
+c2 FLOAT,
+c3  INT,
+c4   INT,
+INDEX complex_index (c2,c3,c4) # Створюємо індекси під час створення таблиці
+);
+
+-- Example
+CREATE INDEX invisibl_hire_date ON employees(hire_date) INVISIBLE ;
+
+-- Task
+/*
+ Task 1. Create index to column birth_date. Default Invisible
+    Task 2.  Find all employee who born in 1958. Save duration.
+    Task 3. Index birth_date change to visible
+    Task 4. Run query from task 2
+    Task 5. Compare result
+ * Try Ingore and Force 
+*/
