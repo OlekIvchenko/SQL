@@ -1,1 +1,120 @@
 
+-- https://docs.google.com/spreadsheets/d/e/2PACX-1vRGEs5pn2uGIGE9U9lNKNlC2Gm0niBijhPuC6nsR0Q0ejHBro97NEIp7NOUwvpAcpSbCs62Oeh1lwiI/pub?output=csv
+
+SELECT *
+FROM sim_cards;
+
+# Task 1. Update Change_user to Capitalize case
+# Task 1. 1
+SELECT CONCAT(SUBSTRING(CHANGE_USER, 1, 1),  LOWER(SUBSTRING(CHANGE_USER, 2))) AS cat_
+FROM sim_cards;
+        
+# Task 1.2 
+UPDATE sim_cards
+SET CHANGE_USER = CONCAT(SUBSTRING(CHANGE_USER, 1, 1),  LOWER(SUBSTRING(CHANGE_USER, 2)));
+        
+# Task 1.3 
+SELECT *
+FROM sim_cards;
+
+# Task 2. Format date to normal date
+SELECT STR_TO_DATE(CHANGE_DATE, '%d.%m.%Y %H:%i:%s')
+FROM sim_cards;
+
+# Task 3. Update change_date to datetime 
+START TRANSACTION;
+
+UPDATE sim_cards
+SET CHANGE_DATE = STR_TO_DATE(CHANGE_DATE, '%d.%m.%Y %H:%i:%s');
+
+SELECT *
+FROM sim_cards;
+
+COMMIT;
+
+# Task 4. Change_user change type to varchar(255)
+ALTER TABLE sim_cards
+CHANGE COLUMN CHANGE_DATE change_date DATETIME;
+
+ALTER TABLE sim_cards
+CHANGE COLUMN CHANGE_USER change_user VARCHAR(255);
+
+SELECT *
+FROM sim_cards;
+
+START TRANSACTION;
+
+ROLLBACK; 
+
+-- Example
+SELECT 
+ CASE 
+  WHEN EXTRACT(MONTH from  hire_date) IN (1, 2, 3) THEN '1 quarter'
+        WHEN  EXTRACT(MONTH from hire_date) IN (4, 5, 6) THEN '2 quarter'
+        WHEN  EXTRACT(MONTH from  hire_date) IN (7, 8, 9) THEN '3 quarter'
+        WHEN  EXTRACT(MONTH from hire_date) IN (10, 11, 12) THEN '4 quarter'
+ ELSE 'other'
+ END AS quarter
+    , CASE 
+  WHEN EXTRACT(YEAR FROM hire_date) - EXTRACT(YEAR FROM birth_date) >= 60 THEN 'old_employee'
+        ELSE 'young_employee'  END AS cat_
+FROM
+ employees;
+
+# Task 5. Всіх діючих співробітників розбийте на сегменти залежно від віку в момент прийому на роботу:
+-- до 25, 25-44, 45-54, 55 і старше, для кожного сегменту виведіть максимальну зарплату. В результаті
+-- потрібно отримати два поля сегмент, максимальну зарплату в сегменті.
+SELECT
+	CASE 
+		WHEN TIMESTAMPDIFF(YEAR, birth_date, hire_date) < 25 THEN 'less_25'
+        WHEN TIMESTAMPDIFF(YEAR, birth_date, hire_date) BETWEEN 25 AND 44 THEN 'middle_25_44'
+        WHEN TIMESTAMPDIFF(YEAR, birth_date, hire_date) BETWEEN 45 AND 54 THEN 'middle+_45-54' 
+		WHEN TIMESTAMPDIFF(YEAR, birth_date, hire_date) >= 55 THEN 'old_55+'
+        ELSE 'other' END AS age_segment
+	, MAX(salary) AS m_salary
+FROM 
+	employees AS ee
+INNER JOIN 
+	salaries AS es ON ee.emp_no = es.emp_no AND CURDATE() BETWEEN es.from_date AND es.to_date
+GROUP BY 1
+;
+
+-- 1.  Вивести всіх співробітників в кого ЗП більше ніж 99999
+    
+-- 2. Вивезти всіх співробітників в кого ім'я Parto
+    
+-- 3. Вивести всіх співробітників, хто народився в періоді з 01-01-1952 по 12-31-1955 і з 01-01-1960 по 12-31-1965
+
+-- 4. Вивести всіх співробітників з сумарним заробітком починаючи з 1 млн
+    
+-- 5. Вивести загальну кількість чоловіків і жінок
+    
+-- 6. Вивезти роки прийняття на роботу, коли було прийнято менше ніж 10000
+    
+-- 7. Починаючи з 01-01-2000 показати середній заробіток кожного співробітника
+    
+-- 8. Показати статистику по співробітниках, віднести дати народження з розбивкою по роках і місяцям
+    
+-- 9. Вивести всіх співробітників, які мають максимальну ЗП більше ніж 99999 і порядковий номер більше ніж 123456
+    
+-- 10. Вивести всіх чоловіків, які народились в червні 1972
+    
+-- 11. Показати поточні посади для всіх співробітників в кого назва посади містить другу букву е
+
+-- 12. Показати у зворотному порядку лише ті відділи, де на момент 10-01-1998 працювало менше ніж 500 працівників;
+    
+-- 13. Показати кількісну статистику працівників по відділах на сьогоднішню дату;
+    
+-- 14. Скільки жінок було прийнято в 1993 році, які народились після 02-01-1940;
+    
+-- 15. Показати всі пари однопрізвищник(ім'я + прізвище), в яких зустрічаються чоловік і жінка з однаковим іменем і прізвищем; 
+
+-- 16. Показати, дату найму на роботу, яка зустрічається найчастіше;
+
+-- 17. Вивести Ім'я і ЗП співробітників;
+    
+-- 18. Вивести Прізвище, посаду на поточний момент і назву відділу  співробітників  на поточний момент
+
+-- 19. Вивести Ім'я та актуальну ЗП співробітників, для тих в кого відсутня, показати 0
+ 
+-- 20. Вивести Ім'я та актуальну ЗП співробітників жіночої статі, для тих в кого відсутня, показати 0
