@@ -40,7 +40,7 @@ WHERE
 SELECT 
     emp.emp_no AS "Employee Number",
     emp.salary AS "Employee Salary",
-    dm.emp_no AS "Managers",
+    dm.emp_no AS "Manager Number",
     man.salary AS "Manager Salary"
 FROM 
     employees.dept_emp AS de
@@ -48,6 +48,7 @@ FROM
     INNER JOIN employees.dept_manager AS dm ON de.dept_no = dm.dept_no
     INNER JOIN employees.salaries AS man ON dm.emp_no = man.emp_no
 WHERE 
+    de.from_date <= CURDATE() AND de.to_date >= CURDATE() AND
     emp.from_date <= CURDATE() AND emp.to_date >= CURDATE() AND
     dm.from_date <= CURDATE() AND dm.to_date >= CURDATE() AND
     man.from_date <= CURDATE() AND man.to_date >= CURDATE()
@@ -83,7 +84,7 @@ GROUP BY
 -- Task 5. Покажіть, скільки співробітників зараз мають кожну посаду. Відсортуйте в порядку спадання за кількістю співробітників.
 SELECT 
     t.title AS "Position", 
-    COUNT(*) AS "Number Employees"
+    COUNT(t.emp_no) AS "Number Employees"
 FROM 
     employees.titles AS t
 WHERE 
@@ -110,15 +111,15 @@ HAVING
     
 -- Task 7. Покажіть середню та максимальну зарплату в тисячах доларів за кожен рік
 SELECT 
-    EXTRACT(YEAR FROM from_date) AS "Year",
+    EXTRACT(YEAR FROM from_date) AS salary_year,
     ROUND(AVG(salary) / 1000, 2) AS "Average Salary Thousands",
     ROUND(MAX(salary) / 1000, 2) AS "Max Salary Thousands"
 FROM 
     employees.salaries
 GROUP BY 
-    year
+    salary_year
 ORDER BY 
-    year;
+    salary_year;
 
 -- Task 8. Покажіть, скільки працівників було найнято у вихідні дні (субота + неділя), розділивши за статтю
 SELECT 
