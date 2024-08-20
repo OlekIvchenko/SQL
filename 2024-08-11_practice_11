@@ -1,1 +1,139 @@
+-- Task 1
+-- https://leetcode.com/problems/employees-whose-manager-left-the-company/description/?envType=study-plan-v2&envId=top-sql-50
 
+-- Task 2
+-- https://leetcode.com/problems/department-top-three-salaries/description/?envType=study-plan-v2&envId=top-sql-50
+
+-- Example 1
+WITH avg_maleCTE(avg_male)
+AS (
+ SELECT AVG(salary)
+    FROM employees.salaries
+ WHERE emp_no IN ( SELECT emp_no FROM employees.employees WHERE gender = 'M')
+    ),
+avg_femaleCTE(avg_female)
+AS (
+ SELECT AVG(salary)
+    FROM employees.salaries
+ WHERE emp_no IN ( SELECT emp_no FROM employees.employees WHERE gender = 'F')
+)
+
+-- Example 2
+SELECT av.avg_male - af.avg_female,  avg_female, avg_male
+FROM avg_maleCTE as av, avg_femaleCTE as af ;
+
+-- Task 1: Вивезти максимальну ЗП по співробітниках в кого id менше ніж 10050, і мінімальну зп в діапазоні 10051 та 10099 
+-- use cte 
+-- *Додати колонку type - де буде значення min/max
+
+SELECT emp_no, max(salary) AS ms
+FROM salaries
+WHERE emp_no < 10050
+GROUP BY emp_no
+ORDER BY ms DESC;
+ 
+SELECT MAX(salary)
+FROM salaries
+WHERE emp_no < 10050;
+
+-- Main option
+WITH max_value_in_idCTE(emp_no, max_value, type)
+AS (
+	SELECT emp_no, MAX(salary), 'max value'
+    FROM employees.salaries
+	WHERE emp_no  < 10050
+    GROUP BY emp_no
+)
+, min_value_CTE(emp_no, min_value, type)
+AS (
+	SELECT emp_no, MIN(salary), 'min value'
+    FROM employees.salaries
+	WHERE emp_no BETWEEN 10051 AND 10099
+    GROUP BY emp_no
+    )
+
+SELECT *
+FROM max_value_in_idCTE
+UNION ALL
+SELECT *
+FROM min_value_CTE
+;
+
+-- Example
+SET SESSION cte_max_recursion_depth = 21;  
+
+-- Example
+WITH RECURSIVE testRecursive(n, name) # n - порядкове значення,  з чим порівнюється
+AS (
+  SELECT 1,1 
+        UNION
+        SELECT n +1, name * (n + 1)
+        FROM testRecursive
+        WHERE n < 20
+ --  LIMIT 20
+)
+SELECT *
+FROM testRecursive;
+
+-- Example
+SET @start_date = '2024-08-01';
+SET @end_date = '2024-08-31';
+
+WITH RECURSIVE month_ AS (
+ SELECT @start_date as start_
+    UNION 
+    SELECT 
+  DATE_ADD(start_, interval 1 day) 
+    FROM month_
+    WHERE start_ < @end_date 
+)
+SELECT *
+FROM month_
+;
+
+-- Example
+WITH RECURSIVE salaryCTE AS (
+ SELECT 
+  d.dept_name, MAX(salary) AS mx_salary
+ FROM 
+  salaries AS es 
+    INNER JOIN  
+  dept_emp AS de ON es.emp_no = de.emp_no
+    INNER JOIN 
+  departments AS d ON de.dept_no = d.dept_no
+    GROUP BY d.dept_name
+   ORDER BY mx_salary DESC
+)
+
+-- Example
+, rankCTE AS (
+ SELECT dept_name, mx_salary, ROW_NUMBER() OVER () AS rnk 
+    FROM salaryCTE
+)
+SELECT *
+FROM rankCTE;
+
+
+# SELECT RAND()*(b - a ) + a; a - звідки, b до куди
+
+SELECT FLOOR(RAND()*(10090 - 10001)+10001);
+
+SELECT *
+FROM employees.employees
+WHERE emp_no IN ( FLOOR(RAND()*(10090-10001)+10001)); #  Приклад
+
+SELECT *
+FROM employees
+ORDER BY RAND()
+LIMIT 10;
+
+SELECT *
+FROM employees
+WHERE emp_no BETWEEN 10010 AND 10190 # range  
+ORDER BY  RAND() 
+LIMIT 10; # Скільки
+
+# Task 1. Перевірити і вивезти всіх співробітників, у кого імя палідром
+SELECT *, LOWER(first_name) AS l_first_name
+FROM employees
+WHERE LOWER(first_name) = LOWER(REVERSE(first_name));
