@@ -1,0 +1,130 @@
+-- SQL степ-проект
+-- Запити
+
+-- 1. Покажіть середню зарплату співробітників за кожен рік, до 2005 року.
+-- 2. Покажіть середню зарплату співробітників по кожному відділу. Примітка: потрібно розрахувати по поточній зарплаті, та поточному відділу співробітників
+-- 3. Покажіть середню зарплату співробітників по кожному відділу за кожний рік
+-- 4. Покажіть відділи в яких зараз працює більше 15000 співробітників.
+-- 5. Для менеджера який працює найдовше покажіть його номер, відділ, дату прийому на роботу, прізвище
+-- 6. Покажіть топ-10 діючих співробітників компанії з найбільшою різницею між їх зарплатою і середньою зарплатою в їх відділі.
+-- 7. Для кожного відділу покажіть другого по порядку менеджера. Необхідно вивести відділ, прізвище ім’я менеджера, дату прийому на роботу менеджера і дату коли він став менеджером відділу
+
+-- Дизайн бази даних:
+-- 1. Створіть базу даних для управління курсами. База має включати наступні таблиці:
+-- - students: student_no, teacher_no, course_no, student_name, email, birth_date.
+-- - teachers: teacher_no, teacher_name, phone_no
+-- - courses: course_no, course_name, start_date, end_date
+-- 2. Додайте будь-які данні (7-10 рядків) в кожну таблицю.
+-- 3. По кожному викладачу покажіть кількість студентів з якими він працював
+-- 4. Спеціально зробіть 3 дубляжі в таблиці students (додайте ще 3 однакові рядки) 5. Напишіть запит який виведе дублюючі рядки в таблиці students
+
+-- ----------------------------------------------------------------------
+-- Part 2
+CREATE DATABASE IF NOT EXISTS step_project;
+
+USE stop_project;
+
+-- Task 1.1 Create table students
+CREATE TABLE IF NOT EXISTS students (
+student_no INT PRIMARY KEY AUTO_INCREMENT
+
+-- Students:
+-- student_no PRIMARY KEY
+-- teacher_no FOREGEN KEY
+-- course_no FOREGEN KEY
+-- Teachers
+-- teacher_no PRIMARY KEY
+);
+
+-- Task 2. Insert info + Transaction + Savepoint (3)
+
+START TRANSACTION;
+
+INSERT INTO students VALUES (1), (2), (3), (4), (5);
+
+SELECT *
+FROM students;
+
+COMMIT; -- ROLLBACK
+
+-- Task 3. JOIN
+-- Task 4. Варіает 1 - додати значення але змінити ID, Варіант 2 - SET операції (UNION, UNION ALL), Варіант 3 - видилити PRIMARY KEY
+-- Task 5. SELF JOIN or SET oparations or subquery(cte)
+
+-- ----------------------------------------------------------------------
+-- Part 1
+-- Task 1
+-- 1.0 Filter date to 2005
+-- 1.1 Extract year from date: Year, Extract, Date_part
+-- 1.2 Group by 1.1 (from_date, to_date)
+-- 1.3 Agregation salary (avg)
+-- 1.4 Filter year 
+
+-- Task 2 Curdate, Now, current_date
+-- 2.1 JOIN
+-- 2.2 GROUP BY dept_no or dept_name
+-- 2.3 Order by
+
+-- Task 3 Схожа з Task 1
+-- 3.1 How to find dept_no and salary
+-- 3.2  group by dept_no, year
+-- 3.3 order by year, dept_no
+
+-- Task 4
+-- 4.0 actual emp_no in dept_no and join
+-- 4.1 group by dept_no or dept_name
+-- 4.2 agrgregation
+-- 4.3 filter (15000)
+-- 4.4 order by dept_no
+
+-- Task 5
+-- 5.0 actual manager
+-- 5.1 actual date substract hire_date
+-- 5.2 display all columns (join)
+
+-- Task 6
+-- cte avg_salary for dept_no
+-- actual employees
+-- different actual_salary and avg_salary for dept_no
+-- limit 10 order by different salary
+
+-- Task 7
+-- Windiows function
+
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+-- ----------------------------------------------------------------------
+
+-- 1.Використовуючи віконні функції покажіть для кожного співробітника мінімальну зарплату яка в нього була.
+-- 2.Використовуючи віконні функції покажіть середню зарплату по кожному відділу
+-- 3.Використовуючи віконні функцію для кожного перегляду зарплати покажіть різницю між переглянутою зарплатою і мінімальною в розрізі співробітників.
+
+-- Example
+SELECT
+  *
+    , MIN(salary) OVER (PARTITION BY emp_no) as min_salary
+FROM
+  employees.salaries
+;
+
+-- Example
+SELECT sales_employee, fiscal_year, sale,
+  DENSE_RANK() OVER
+                  (
+                      PARTITION BY fiscal_year
+                      ORDER BY sale  desc
+                  )  'dense rank ' ,
+    RANK() OVER 
+                  ( 
+                    PARTITION BY fiscal_year 
+                    ORDER BY sale DESC
+                                    ) AS 'Rank',
+  NTILE(2) over ( partition by fiscal_year order by  sale desc ) as 'NTILE'
+FROM fk_demo.sales;
+
+-- Task 1. Для кожного співробітника покажіть його другий по порядку зарплатний контракт
+-- Task 2. Для кожного відділу покажіть третього історичного менеджера.
+-- Task 3. Для кожного співробітника покажіть другий по порядку відділ в якому він працював
