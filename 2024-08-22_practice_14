@@ -1,1 +1,141 @@
+-- 1.Використовуючи віконні функції покажіть для кожного співробітника мінімальну зарплату яка в нього була.
+SELECT
+  *
+    , MIN(salary) OVER (PARTITION BY emp_no) as min_salary
+FROM
+  employees.salaries
+;
 
+-- 2.Використовуючи віконні функції покажіть середню зарплату по кожному відділу
+SELECT 
+	es.emp_no
+    ,es.salary
+    ,de.dept_no
+    ,AVG(es.salary) OVER (PARTITION BY de.dept_no) as avg_salar
+FROM
+	employees.salaries AS es
+INNER JOIN
+	employees.dept_emp AS de ON es.emp_no = de.emp_no
+;
+
+-- 3.Використовуючи віконні функцію для кожного перегляду зарплати покажіть різницю між переглянутою зарплатою і мінімальною в розрізі співробітників.
+SELECT 
+ es.emp_no
+ ,es.salary - MIN(salary) OVER (PARTITION BY emp_no) as diff_salary
+FROM 
+	employees.salaries AS es
+;
+
+-- Example
+SELECT sales_employee, fiscal_year, sale,
+  DENSE_RANK() OVER
+                  (
+                      PARTITION BY fiscal_year
+                      ORDER BY sale  desc
+                  )  'dense rank ' ,
+    RANK() OVER 
+                  ( 
+                    PARTITION BY fiscal_year 
+                    ORDER BY sale DESC
+                                    ) AS 'Rank',
+  NTILE(2) over ( partition by fiscal_year order by  sale desc ) as 'NTILE'
+FROM fk_demo.sales;
+
+--  Task 1. Для кожного співробітника покажіть його другий по порядку зарплатний контракт
+WITH cte1 as (
+	select *, row_number() over (partition by emp_no order by from_date) as mk
+    from employees.salaries
+)
+SELECT *
+FROM cte1
+WHERE mk=2;
+
+--  Task 2. Для кожного відділу покажіть третього історичного менеджера.
+WITH cte1 as (
+	select*, ROW_NUMBER() OVER (PARTITION BY dept_no ORDER BY from_date) as mk
+    from employees.dept_manager AS dm
+)
+SELECT *
+FROM cte1
+WHERE mk = 3;
+
+--  Task 3. Для кожного співробітника покажіть другий по порядку відділ в якому він працював
+WITH cte1 as (
+	select*, ROW_NUMBER() OVER (PARTITION BY emp_no ORDER BY from_date) as mk
+    from employees.dept_emp AS dm
+)
+SELECT *
+FROM cte1
+WHERE mk = 2;
+
+  -- Example
+  SELECT es.emp_no, ee.first_name, ee.last_name, es.salary, es.from_date,
+  SUM(salary)
+    OVER (
+    PARTITION BY es.emp_no
+        ORDER BY es.from_date
+                        -- Нижня рамка                   Верхня рамка 
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW # Вказуємо діапазон від початку до кінця поточної строки 
+    ),
+    SUM(salary)
+    OVER (
+    PARTITION BY es.emp_no
+        ORDER BY ee.hire_date
+                      -- Нижня рамка                   Верхня рамка 
+    ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING # Вказуємо діапазон від початку до кінця поточної строки 
+    )
+FROM employees.salaries AS es
+INNER JOIN employees.employees AS ee USING(emp_no);
+
+/*
+  UNBOUNDED PRECEDING emp_no = 10001
+  2.PRECEDING emp_no = 10001
+  CURRENT_ROW emp_no = 10003
+  2. FOLLOWING emp_no = 10005
+  UNBOUNDED FOLLOWING emp_no = 499999
+*/
+
+-- Example
+SELECT employee_name, hours,
+LAST_VALUE(employee_name) OVER ( 
+      ORDER BY hours
+      RANGE BETWEEN # Діапозон мінімального і максимального значення 
+                      UNBOUNDED PRECEDING  # Нижній значення (min)
+                                            AND 
+                      UNBOUNDED FOLLOWING # Верхнеє значення (max)
+)  highest_overtime_employee
+FROM employees.overtime;
+
+-- Example
+SELECT emp_no, from_date,
+      LEAD(from_date,1)   OVER (   # LEAD Повертає наступне значення, якщо значення не буде, то поверне Null
+                  PARTITION BY emp_no
+                  ORDER BY from_date ) AS nextSalaryDate,
+      LAG(from_date, 1, 'No info') OVER (     # LAG Повертає попереднє значення,  якщо значення не буде, то поверне Null
+                  PARTITION BY emp_no
+                  ORDER BY from_date )  AS previosSalaryDate
+FROM employees.salaries
+WHERE emp_no < 10050 AND emp_no <> 10001;
+
+-- Example
+SELECT emp_no, from_date,
+      LEAD(from_date,1)   OVER (   # LEAD Повертає наступне значення, якщо значення не буде, то поверне Null
+                  PARTITION BY emp_no
+                  ORDER BY from_date ) AS nextSalaryDate,
+      LAG(from_date, 1, 'No info') OVER (     # LAG Повертає попереднє значення,  якщо значення не буде, то поверне Null
+                  PARTITION BY emp_no
+                  ORDER BY from_date )  AS previosSalaryDate
+FROM employees.salaries
+WHERE emp_no < 10050 AND emp_no <> 10001;
+
+# Task 1. для кожного співробітника показати previ salary, 2 prev, salary, next, 2 nxt. If no value: No value in window
+# 1.1 Кумулятивну по зп
+
+-- Example
+SELECT 
+  *
+    , LEAD(salary, 1) OVER w AS nxt
+    , LEAD(salary, 2) OVER w AS nxt
+FROM 
+  employees.salaries 
+WINDOW w AS (PARTITION BY emp_no ORDER BY from_date);
