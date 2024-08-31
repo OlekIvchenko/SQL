@@ -143,3 +143,123 @@ WHERE
     manager_rank = 2
 ORDER BY 
     dept_name;
+
+-- 1. Створіть базу даних для управління курсами. База має включати наступні таблиці:
+-- - students: student_no, teacher_no, course_no, student_name, email, birth_date.
+-- - teachers: teacher_no, teacher_name, phone_no
+-- - courses: course_no, course_name, start_date, end_date
+
+DROP DATABASE IF EXISTS course_management;
+CREATE DATABASE IF NOT EXISTS course_management;
+USE course_management;
+
+CREATE TABLE IF NOT EXISTS teachers (
+    teacher_no INT AUTO_INCREMENT PRIMARY KEY,
+    teacher_name VARCHAR(100),
+    phone_no VARCHAR(20)
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+    course_no INT AUTO_INCREMENT PRIMARY KEY,
+    course_name VARCHAR(100),
+    start_date DATE,
+    end_date DATE
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    student_no INT AUTO_INCREMENT PRIMARY KEY,
+    teacher_no INT,
+    course_no INT,
+    student_name VARCHAR(100),
+    email VARCHAR(100),
+    birth_date DATE,
+    FOREIGN KEY (teacher_no) REFERENCES teachers(teacher_no),
+    FOREIGN KEY (course_no) REFERENCES courses(course_no)
+);
+
+-- 2. Додайте будь-які данні (7-10 рядків) в кожну таблицю.
+START TRANSACTION;
+
+INSERT INTO teachers (teacher_name, phone_no) VALUES
+('Іван Петренко', '+380501234567'),
+('Марія Коваленко', '+380672345678'),
+('Олег Сидоренко', '+380633456789'),
+('Тетяна Шевченко', '+380994567890'),
+('Андрій Мельник', '+380505678901'),
+('Ольга Коваль', '+380676789012'),
+('Сергій Бондаренко', '+380637890123');
+
+INSERT INTO courses (course_name, start_date, end_date) VALUES
+('Основи програмування', '2024-09-01', '2024-12-20'),
+('Веб-дизайн', '2024-09-15', '2024-12-15'),
+('Бази даних', '2024-10-01', '2025-01-31'),
+('Машинне навчання', '2024-11-01', '2025-03-31'),
+('Мобільна розробка', '2025-02-01', '2025-05-31'),
+('Кібербезпека', '2025-03-01', '2025-06-30'),
+('DevOps практики', '2025-04-01', '2025-07-31');
+
+INSERT INTO students (teacher_no, course_no, student_name, email, birth_date) VALUES
+(1, 1, 'Олексій Сидоренко', 'oleksiy@gmail.com', '2000-05-15'),
+(2, 2, 'Наталія Шевченко', 'natalia@gmail.com', '2001-03-20'),
+(3, 3, 'Віктор Ковальчук', 'viktor@gmail.com', '1999-11-10'),
+(4, 4, 'Ірина Мороз', 'iryna@gmail.com', '2002-07-25'),
+(5, 5, 'Дмитро Лисенко', 'dmytro@gmail.com', '2000-09-30'),
+(6, 6, 'Юлія Павленко', 'yuliia@gmail.com', '2001-12-05'),
+(7, 7, 'Максим Григоренко', 'maksym@gmail.com', '1998-08-18'),
+(1, 2, 'Анна Кравченко', 'anna@gmail.com', '2003-02-14'),
+(2, 3, 'Володимир Зінченко', 'volodymyr@gmail.com', '1999-06-22'),
+(3, 4, 'Софія Романенко', 'sofia@gmail.com', '2002-04-11');
+
+COMMIT;
+
+# SELECT *
+# FROM course_management.courses;
+
+# SELECT *
+# FROM course_management.students;
+
+# SELECT *
+# FROM course_management.teachers;
+
+-- 3. По кожному викладачу покажіть кількість студентів з якими він працював
+SELECT 
+    cmt.teacher_no,
+    cmt.teacher_name,
+    COUNT(DISTINCT cms.student_no) AS student_count
+FROM 
+    course_management.teachers AS cmt
+LEFT JOIN 
+    course_management.students AS cms ON cmt.teacher_no = cms.teacher_no
+GROUP BY 
+    cmt.teacher_no, cmt.teacher_name
+ORDER BY 
+    cmt.teacher_no;
+
+-- 4. Спеціально зробіть 3 дубляжі в таблиці students (додайте ще 3 однакові рядки) 
+INSERT INTO course_management.students (teacher_no, course_no, student_name, email, birth_date)
+SELECT teacher_no, course_no, student_name, email, birth_date
+FROM course_management.students
+ORDER BY RAND()
+LIMIT 3;
+
+-- 5. Напишіть запит який виведе дублюючі рядки в таблиці students
+SELECT 
+    cms.teacher_no,
+    cms.course_no,
+    cms.student_name,
+    cms.email,
+    cms.birth_date,
+    COUNT(*) AS duplicate_count
+FROM 
+    course_management.students AS cms
+GROUP BY 
+    cms.teacher_no,
+    cms.course_no,
+    cms.student_name,
+    cms.email,
+    cms.birth_date
+HAVING 
+    COUNT(*) > 1
+ORDER BY 
+    duplicate_count DESC,
+    cms.student_name;
