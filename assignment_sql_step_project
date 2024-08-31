@@ -1,0 +1,145 @@
+-- SQL степ-проект 
+-- Запити
+-- 1. Покажіть середню зарплату співробітників за кожен рік, до 2005 року.
+SELECT 
+    YEAR(es.from_date) AS report_year,
+    ROUND(AVG(es.salary), 2) AS avg_salary
+FROM 
+    employees.salaries AS es
+WHERE 
+    es.to_date <= '2005-12-31'
+GROUP BY 
+    report_year
+HAVING 
+    report_year BETWEEN MIN(YEAR(es.from_date)) AND 2005
+ORDER BY 
+    report_year;
+    
+-- 2. Покажіть середню зарплату співробітників по кожному відділу. Примітка: потрібно розрахувати по поточній зарплаті, та поточному відділу співробітників
+SELECT 
+    ed.dept_name,
+    ROUND(AVG(es.salary), 2) AS avg_salary
+FROM 
+    employees.employees AS ee
+JOIN employees.dept_emp AS ede ON ee.emp_no = ede.emp_no
+JOIN employees.departments AS ed ON ede.dept_no = ed.dept_no
+JOIN employees.salaries AS es ON ee.emp_no = es.emp_no
+WHERE 
+    ede.to_date = '9999-01-01'
+    AND es.to_date = '9999-01-01'
+GROUP BY 
+    ed.dept_name
+ORDER BY 
+    avg_salary DESC;
+
+-- 3. Покажіть середню зарплату співробітників по кожному відділу за кожний рік
+SELECT 
+    ed.dept_name,
+    YEAR(es.from_date) AS report_year,
+    ROUND(AVG(es.salary), 2) AS avg_salary
+FROM 
+    employees.salaries AS es
+JOIN employees.dept_emp AS ede ON es.emp_no = ede.emp_no
+JOIN employees.departments AS ed ON ede.dept_no = ed.dept_no
+WHERE 
+    es.from_date <= ede.to_date 
+    AND ede.from_date <= es.to_date
+GROUP BY 
+    ed.dept_name, report_year
+ORDER BY 
+    report_year, ed.dept_name;
+
+-- 4. Покажіть відділи в яких зараз працює більше 15000 співробітників.
+SELECT 
+    ed.dept_no,
+    ed.dept_name,
+    COUNT(ede.emp_no) AS employee_count
+FROM 
+    employees.departments AS ed
+JOIN employees.dept_emp AS ede ON ed.dept_no = ede.dept_no
+WHERE 
+    ede.to_date = '9999-01-01'
+GROUP BY 
+    ed.dept_no, ed.dept_name
+HAVING 
+    employee_count > 15000
+ORDER BY 
+    ed.dept_no;
+    
+-- 5. Для менеджера який працює найдовше покажіть його номер, відділ, дату прийому на роботу, прізвище
+SELECT 
+    edm.emp_no AS manager_no,
+    ed.dept_no,
+    ed.dept_name,
+    ee.hire_date,
+    ee.last_name,
+    DATEDIFF(CURDATE(), ee.hire_date) AS days_worked
+FROM 
+    employees.dept_manager AS edm
+JOIN employees.employees AS ee ON edm.emp_no = ee.emp_no
+JOIN employees.departments AS ed ON edm.dept_no = ed.dept_no
+WHERE 
+    edm.to_date = '9999-01-01'  -- Поточні менеджери
+ORDER BY 
+    days_worked DESC
+LIMIT 1;
+
+-- 6. Покажіть топ-10 діючих співробітників компанії з найбільшою різницею між їх зарплатою і середньою зарплатою в їх відділі.
+WITH avg_dept_salary AS (
+    SELECT 
+        ede.dept_no,
+        ROUND(AVG(es.salary), 2) AS avg_salary
+    FROM 
+        employees.dept_emp AS ede
+    JOIN employees.salaries AS es ON ede.emp_no = es.emp_no
+    WHERE 
+        ede.to_date = '9999-01-01' AND
+        es.to_date = '9999-01-01'
+    GROUP BY 
+        ede.dept_no
+)
+SELECT 
+    ee.emp_no,
+    ee.first_name,
+    ee.last_name,
+    ed.dept_name,
+    es.salary AS employee_salary,
+    ads.avg_salary AS dept_avg_salary,
+    ROUND(es.salary - ads.avg_salary, 2) AS salary_difference
+FROM 
+    employees.employees AS ee
+JOIN employees.dept_emp AS ede ON ee.emp_no = ede.emp_no
+JOIN employees.departments AS ed ON ede.dept_no = ed.dept_no
+JOIN employees.salaries AS es ON ee.emp_no = es.emp_no
+JOIN avg_dept_salary AS ads ON ede.dept_no = ads.dept_no
+WHERE 
+    ede.to_date = '9999-01-01' AND
+    es.to_date = '9999-01-01'
+ORDER BY 
+    salary_difference DESC
+LIMIT 10;
+
+-- 7. Для кожного відділу покажіть другого по порядку менеджера. Необхідно вивести відділ, прізвище ім’я менеджера, дату прийому на роботу менеджера і дату коли він став менеджером відділу
+SELECT 
+    dept_name,
+    last_name,
+    first_name,
+    hire_date,
+    from_date AS manager_start_date
+FROM (
+    SELECT 
+        ed.dept_name,
+        ee.last_name,
+        ee.first_name,
+        ee.hire_date,
+        edm.from_date,
+        ROW_NUMBER() OVER (PARTITION BY ed.dept_no ORDER BY edm.from_date) AS manager_rank
+    FROM 
+        employees.dept_manager AS edm
+    JOIN employees.departments AS ed ON edm.dept_no = ed.dept_no
+    JOIN employees.employees AS ee ON edm.emp_no = ee.emp_no
+) ranked_managers
+WHERE 
+    manager_rank = 2
+ORDER BY 
+    dept_name;
